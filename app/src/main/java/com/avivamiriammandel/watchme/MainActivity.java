@@ -1,5 +1,7 @@
 package com.avivamiriammandel.watchme;
 
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -38,11 +40,17 @@ public class MainActivity extends AppCompatActivity {
     private List<Movie> movieList;
     private static final int WIDTH_OF_COLUMNS = 120;
     public static final String TAG = MoviesAdapter.class.getName();
+    Boolean popular, top_rated, favorite;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
         initViews();
 
@@ -59,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initViews() {
         progressBar = findViewById(R.id.progress);
-        progressBar.setIndeterminate(true);
+        //progressBar.setIndeterminate(true);
         progressBar.setVisibility(View.VISIBLE);
 
         recyclerView = findViewById(R.id.recycler_view);
@@ -81,6 +89,26 @@ public class MainActivity extends AppCompatActivity {
         //adapter.notifyDataSetChanged();
     }
 
+    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
+            = new BottomNavigationView.OnNavigationItemSelectedListener() {
+
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.navigation_popular:
+                    loadJSON();
+                    return true;
+                case R.id.navigation_top_rated:
+                    loadJSON1();
+                    return true;
+                case R.id.navigation_favorite:
+                    return true;
+            }
+            return false;
+        }
+    };
+
+
     private void loadJSON() {
 
         try {
@@ -91,14 +119,17 @@ public class MainActivity extends AppCompatActivity {
             }
 
             Client client = new Client();
-            Service apiService = client.getClient().create(Service.class);
+            Service apiService = Client.getClient().create(Service.class);
             Call<MoviesResponse> call = apiService.getPopularMovies(BuildConfig.API_KEY);
             call.enqueue(new Callback<MoviesResponse>() {
                 @Override
-                public void onResponse(Call<MoviesResponse> call, Response<MoviesResponse> response) {
+                public void onResponse(@NonNull Call<MoviesResponse> call, @NonNull Response<MoviesResponse> response) {
                     if (response.isSuccessful()) {
                         MoviesResponse results = response.body();
-                        List<Movie> movieList = results.getResults();
+                        List<Movie> movieList = null;
+                        if (results != null) {
+                            movieList = results.getResults();
+                        }
 
                         recyclerView = findViewById(R.id.recycler_view);
                         recyclerView.setAdapter(new MoviesAdapter(getApplicationContext(), movieList));
@@ -118,7 +149,61 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onFailure(Call<MoviesResponse> call, Throwable t) {
+                public void onFailure(@NonNull Call<MoviesResponse> call, @NonNull Throwable t) {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    Toast.makeText(MainActivity.this, R.string.onFailureError, Toast.LENGTH_LONG).show();
+                    Log.d(TAG, t.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            progressBar.setVisibility(View.INVISIBLE);
+            Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+            Log.d(TAG, e.getMessage());
+        }
+
+    }
+
+    private void loadJSON1() {
+
+        try {
+            if (BuildConfig.API_KEY.isEmpty()) {
+                progressBar.setVisibility(View.INVISIBLE);
+                Toast.makeText(getApplicationContext(), R.string.apiKeyError, Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            Client client = new Client();
+            Service apiService = Client.getClient().create(Service.class);
+            Call<MoviesResponse> call = apiService.getTopRatedMovies(BuildConfig.API_KEY);
+            call.enqueue(new Callback<MoviesResponse>() {
+                @Override
+                public void onResponse(@NonNull Call<MoviesResponse> call, @NonNull Response<MoviesResponse> response) {
+                    if (response.isSuccessful()) {
+                        MoviesResponse results = response.body();
+                        List<Movie> movieList = null;
+                        if (results != null) {
+                            movieList = results.getResults();
+                        }
+
+                        recyclerView = findViewById(R.id.recycler_view);
+                        recyclerView.setAdapter(new MoviesAdapter(getApplicationContext(), movieList));
+                        recyclerView.smoothScrollToPosition(0);
+                        if (swipeContainer.isRefreshing())
+                            swipeContainer.setRefreshing(false);
+
+                        progressBar.setVisibility(View.INVISIBLE);
+                        recyclerView.setVisibility(View.VISIBLE);
+                    } else {
+
+                        progressBar.setVisibility(View.INVISIBLE);
+                        ApiError apiError = ErrorUtils.parseError(response);
+                        Toast.makeText(MainActivity.this, apiError.getMessage(), Toast.LENGTH_LONG).show();
+                        Log.e(TAG, "onResponse: " + apiError.getMessage() + " " + apiError.getStatusCode() + " " + apiError.getEndpoint());
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<MoviesResponse> call, @NonNull Throwable t) {
                     progressBar.setVisibility(View.INVISIBLE);
                     Toast.makeText(MainActivity.this, R.string.onFailureError, Toast.LENGTH_LONG).show();
                     Log.d(TAG, t.getMessage());
