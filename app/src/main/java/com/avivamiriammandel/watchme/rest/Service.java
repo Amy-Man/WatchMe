@@ -11,7 +11,7 @@ public interface Service {
             Call<MoviesResponse>getPopularMovies
             (@Query("api_key") String apiKey);
 
-    @GET("movie/topRated")
+    @GET("movie/top_rated")
             Call<MoviesResponse>getTopRatedMovies
             (@Query("api_key") String apiKey);
 }

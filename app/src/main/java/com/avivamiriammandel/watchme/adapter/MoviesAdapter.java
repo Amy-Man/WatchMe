@@ -51,7 +51,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesView
 
     @Override
     public void onBindViewHolder(@NonNull MoviesAdapter.MoviesViewHolder holder, int position) {
-        holder.title.setText(movieList.get(position).getOriginalTitle());
+        holder.title.setText(movieList.get(position).getTitle());
         Double voteDoubleSpare = movieList.get(position).getVoteAverage();
         DecimalFormat f = new DecimalFormat("##.0");
         String vote = (f.format(voteDoubleSpare));

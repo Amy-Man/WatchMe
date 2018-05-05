@@ -40,8 +40,6 @@ public class MainActivity extends AppCompatActivity {
     private List<Movie> movieList;
     private static final int WIDTH_OF_COLUMNS = 120;
     public static final String TAG = MoviesAdapter.class.getName();
-    Boolean popular, top_rated, favorite;
-
 
 
     @Override
@@ -49,12 +47,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
         initViews();
 
-        swipeContainer = findViewById(R.id.parent_activity_layout);
+        swipeContainer = findViewById(R.id.swupe_layout);
         swipeContainer.setColorSchemeResources(android.R.color.holo_orange_dark);
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -67,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initViews() {
         progressBar = findViewById(R.id.progress);
-        //progressBar.setIndeterminate(true);
+        progressBar.setIndeterminate(true);
         progressBar.setVisibility(View.VISIBLE);
 
         recyclerView = findViewById(R.id.recycler_view);
@@ -85,8 +83,6 @@ public class MainActivity extends AppCompatActivity {
 
 
         loadJSON();
-
-        //adapter.notifyDataSetChanged();
     }
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener

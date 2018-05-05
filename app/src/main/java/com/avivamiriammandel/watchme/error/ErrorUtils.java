@@ -1,5 +1,7 @@
 package com.avivamiriammandel.watchme.error;
 
+import android.support.annotation.NonNull;
+
 import com.avivamiriammandel.watchme.model.MoviesResponse;
 import com.avivamiriammandel.watchme.rest.Client;
 
@@ -18,16 +20,19 @@ import static com.avivamiriammandel.watchme.rest.Client.getClient;
  */
 
 public class ErrorUtils {
-    public static ApiError parseError(Response<MoviesResponse> response) {
+    public static ApiError parseError(@NonNull Response<MoviesResponse> response) {
         Converter<ResponseBody, ApiError> converter =
                 getClient()
                         .responseBodyConverter(ApiError.class, new Annotation[0]);
         ApiError error;
         try {
-            error = converter.convert(response.errorBody());
+            if (null != response.errorBody()) {
+                error = converter.convert(response.errorBody());
+                return error;
+            }
         } catch (IOException e) {
             return new ApiError();
         }
-        return error;
+        return new ApiError();
     }
 }

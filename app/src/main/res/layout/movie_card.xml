@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/card_view_layout_root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     >
 
     <android.support.v7.widget.CardView
@@ -60,7 +60,7 @@
             android:layout_height="wrap_content"
             android:paddingTop="210dp"
             android:paddingLeft="25dp"
-            android:textSize="15dp"
+            android:textSize="15sp"
             app:layout_constraintTop_toBottomOf="@id/image_view_poster"
             app:layout_constraintLeft_toRightOf="@id/image_view_rating"
             tools:text="6.5" />

@@ -67,7 +67,7 @@ public class DetailActivity extends AppCompatActivity {
             String thumbnailUrl = movie.getPosterPath();
             String backdropUrl = movie.getBackdropPath();
 
-            String movieTitle = movie.getOriginalTitle();
+            String movieTitle = movie.getTitle();
             toolbar.setTitle(movieTitle);
             String synopsis = movie.getOverview();
 
@@ -85,7 +85,6 @@ public class DetailActivity extends AppCompatActivity {
 
             String release = movie.getReleaseDate();
 
-          //  movieName.setText(movieTitle);
             plotSynopsis.setText(synopsis);
             userRating.setText(ratingOutOfTen);
             releaseDate.setText(release);
