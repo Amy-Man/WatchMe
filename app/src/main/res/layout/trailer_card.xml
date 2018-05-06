@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/trailer_card_view_layout_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    >
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/trailer_card_view"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/card_margin"
+        android:layout_marginLeft="60dp"
+        android:layout_marginTop="56dp"
+        android:elevation="4dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        card_view:cardCornerRadius="@dimen/card_radius">
+
+        <ImageView
+            android:id="@+id/image_view_youtube"
+            android:layout_width="50dp"
+            android:layout_height="100dp"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:src="@drawable/ic_youtube"
+            app:layout_constraintLeft_toLeftOf="@id/trailer_card_view"
+            app:layout_constraintTop_toBottomOf="@id/trailer_card_view"
+
+            />
+
+        <TextView
+            android:id="@+id/text_view_trailer_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:paddingLeft="75dp"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:layout_constraintLeft_toRightOf="@+id/image_view_youtube"
+            app:layout_constraintTop_toTopOf="@id/image_view_youtube"
+            tools:text="Sample Trailer"
+            tools:textColor="@color/colorBlack" />
+
+
+    </android.support.v7.widget.CardView>
+
+
+</android.support.constraint.ConstraintLayout>

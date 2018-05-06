@@ -1,9 +1,12 @@
 package com.avivamiriammandel.watchme.rest;
 
 import com.avivamiriammandel.watchme.model.MoviesResponse;
+import com.avivamiriammandel.watchme.model.TrailersResponse;
+import com.github.florent37.glidepalette.BitmapPalette;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface Service {
@@ -14,4 +17,9 @@ public interface Service {
     @GET("movie/top_rated")
             Call<MoviesResponse>getTopRatedMovies
             (@Query("api_key") String apiKey);
+    @GET("movie/{movie_id}/videos")
+            Call<TrailersResponse>getMovieTrailers
+            (@Path("movie_id") int movieId,
+             @Query("api_key") String apiKey);
+
 }
