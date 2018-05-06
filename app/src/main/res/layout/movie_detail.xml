@@ -21,18 +21,6 @@
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 />
-            <!--TextView
-                android:id="@+id/text_view_movie_name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/layout_margin_left"
-                android:layout_marginTop="@dimen/layout_margin_top"
-                android:textSize="20sp"
-                android:padding="@dimen/layout_padding"
-                tools:text="@string/movie_title"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintBottom_toBottomOf="@id/image_view_poster"
-           -->
 
             <TextView
                 android:id="@+id/text_view_user_rating"
