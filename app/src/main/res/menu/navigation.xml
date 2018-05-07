@@ -16,4 +16,14 @@
         android:icon="@drawable/ic_favorite_black_24px"
         android:title="@string/title_favorite" />
 
+    <!--item
+        android:id="@+id/navigation_trailer"
+        android:icon="@drawable/ic_trailer"
+        android:title="@string/title_trailer" />
+
+    <item
+        android:id="@+id/navigation_review"
+        android:icon="@drawable/ic_rating_full"
+        android:title="@string/title_review" /-->
+
 </menu>

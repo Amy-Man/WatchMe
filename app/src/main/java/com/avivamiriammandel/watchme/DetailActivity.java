@@ -5,13 +5,17 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -62,7 +66,9 @@ public class DetailActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
-
+        BottomNavigationView navigation = findViewById(R.id.navigation_details);
+        Log.d(TAG, "onCreate: nav"+ navigation.toString());
+        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         context = getApplicationContext();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -218,6 +224,47 @@ public class DetailActivity extends AppCompatActivity
                 Log.d(TAG, e.getMessage());
             }
     }
+    private void loadJSON1() {
+        int movieId = movie.getId();
+        try {
+            if (BuildConfig.API_KEY.isEmpty()) {
+                Toast.makeText(getApplicationContext(), R.string.apiKeyError, Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            Client client = new Client();
+            Service apiService = Client.getClient().create(Service.class);
+            Call<TrailersResponse> call = apiService.getMovieTrailers(movieId, BuildConfig.API_KEY);
+            call.enqueue(new Callback<TrailersResponse>() {
+                @Override
+                public void onResponse(Call<TrailersResponse> call, Response<TrailersResponse> response) {
+                    if (response.isSuccessful()) {
+                        TrailersResponse results = response.body();
+                        trailerList = null;
+                        if (results != null) {
+                            trailerList = results.getResults();
+                            recyclerView.setAdapter(new TrailersAdapter(getApplicationContext(), trailerList));
+                            recyclerView.smoothScrollToPosition(0);
+                        } else {
+
+                            ApiError apiError = TrailerErrorUtils.parseError(response);
+                            Toast.makeText(getApplicationContext(), apiError.getMessage(), Toast.LENGTH_LONG).show();
+                            Log.e(TAG, "onResponse: " + apiError.getMessage() + " " + apiError.getStatusCode() + " " + apiError.getEndpoint());
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<TrailersResponse> call, Throwable t) {
+                    Toast.makeText(getApplicationContext(), R.string.onNoInternetError, Toast.LENGTH_LONG).show();
+                    Log.d(TAG, t.getMessage());
+                    }
+                });
+            } catch (Exception e) {
+                Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+                Log.d(TAG, e.getMessage());
+            }
+    }
 
     @Override
     public void onNetworkConnectionChanged(boolean isConnected) {
@@ -250,4 +297,45 @@ public class DetailActivity extends AppCompatActivity
         /*register connection status listener*/
         MyApplication.getInstance().setConnectivityListener(this);
     }
+
+
+    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
+            = new BottomNavigationView.OnNavigationItemSelectedListener() {
+
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            switch (item.getItemId()) {
+                /*case R.id.navigation_list:
+                    trailersTitle.setVisibility(View.INVISIBLE);
+                    recyclerView.setVisibility(View.INVISIBLE);
+                */    case R.id.navigation_trailer:
+                    checkConnection();
+                    if (connected) {
+                        trailersTitle.setVisibility(View.VISIBLE);
+                        trailersTitle.setText(R.string.title_trailers);
+                        recyclerView.setVisibility(View.VISIBLE);
+                        loadJSON();
+                    }
+                    else
+                        Toast.makeText(getApplicationContext(), R.string.onNoInternetError, Toast.LENGTH_LONG).show();
+                    return true;
+                case R.id.navigation_review:
+                    checkConnection();
+                    if (connected) {
+                        trailersTitle.setVisibility(View.VISIBLE);
+                        trailersTitle.setText(R.string.title_reviews);
+                        recyclerView.setVisibility(View.VISIBLE);
+                        loadJSON1();
+                    }
+                    else
+                        Toast.makeText(getApplicationContext(), R.string.onNoInternetError, Toast.LENGTH_LONG).show();
+
+                    return true;
+            }
+            return false;
+        }
+    };
 }
+
+
+

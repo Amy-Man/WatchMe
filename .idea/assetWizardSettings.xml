@@ -16,12 +16,43 @@
                             <entry key="actionbar">
                               <value>
                                 <PersistentState>
+                                  <option name="children">
+                                    <map>
+                                      <entry key="image">
+                                        <value>
+                                          <PersistentState>
+                                            <option name="values">
+                                              <map>
+                                                <entry key="paddingPercent" value="5" />
+                                              </map>
+                                            </option>
+                                          </PersistentState>
+                                        </value>
+                                      </entry>
+                                    </map>
+                                  </option>
                                   <option name="values">
                                     <map>
                                       <entry key="assetType" value="IMAGE" />
-                                      <entry key="imageAsset" value="C:\HardDisk\Mandel\AndroidCourse\AndroidNanaDegree\videos_icons\Videos_Icon_256.png" />
-                                      <entry key="outputName" value="ic_launcher" />
+                                      <entry key="imageAsset" value="C:\HardDisk\Mandel\AndroidCourse\AndroidNanaDegree\ratings.gif" />
+                                      <entry key="outputName" value="ic_ratings" />
                                       <entry key="theme" value="CUSTOM" />
+                                      <entry key="themeColor" value="000000" />
+                                    </map>
+                                  </option>
+                                </PersistentState>
+                              </value>
+                            </entry>
+                            <entry key="launcher">
+                              <value>
+                                <PersistentState>
+                                  <option name="values">
+                                    <map>
+                                      <entry key="backgroundLayerName" value="ic_launcher_background" />
+                                      <entry key="foregroundLayerName" value="ic_launcher_foreground" />
+                                      <entry key="generateWebIcon" value="false" />
+                                      <entry key="legacyIconShape" value="NONE" />
+                                      <entry key="outputName" value="ic_" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -33,8 +64,10 @@
                                   <option name="values">
                                     <map>
                                       <entry key="assetType" value="IMAGE" />
+                                      <entry key="backgroundColor" value="000000" />
                                       <entry key="iconShape" value="NONE" />
-                                      <entry key="imageAsset" value="C:\HardDisk\Mandel\AndroidCourse\AndroidNanaDegree\videos_icons\Videos_Icon_256.png" />
+                                      <entry key="imageAsset" value="C:\HardDisk\Mandel\AndroidCourse\AndroidNanaDegree\rating_full.gif" />
+                                      <entry key="outputName" value="ic_ratings" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -46,7 +79,7 @@
                                   <option name="values">
                                     <map>
                                       <entry key="assetType" value="IMAGE" />
-                                      <entry key="imageAsset" value="C:\HardDisk\Mandel\AndroidCourse\AndroidNanaDegree\videos_icons\Videos_Icon_196.png" />
+                                      <entry key="imageAsset" value="C:\HardDisk\Mandel\AndroidCourse\AndroidNanaDegree\rating_full.gif" />
                                       <entry key="outputName" value="" />
                                     </map>
                                   </option>
@@ -94,8 +127,8 @@
                         <option name="values">
                           <map>
                             <entry key="assetSourceType" value="FILE" />
-                            <entry key="outputName" value="ic_papirus_team_papirus_apps_youtube" />
-                            <entry key="sourceFile" value="C:\HardDisk\Mandel\AndroidCourse\AndroidNanaDegree\Papirus-Team-Papirus-Apps-Youtube.svg" />
+                            <entry key="outputName" value="ic_review" />
+                            <entry key="sourceFile" value="C:\HardDisk\Mandel\AndroidCourse\AndroidNanaDegree\review.psd" />
                           </map>
                         </option>
                       </PersistentState>

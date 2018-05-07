@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity
         ConnectivityReceiver receiver = new ConnectivityReceiver();
         registerReceiver(receiver, intentFilter);
         receiver.onReceive(getApplicationContext(), i);
+
         BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
@@ -72,7 +73,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onRefresh() {
                 initViews();
-                Toast.makeText(MainActivity.this, R.string.refresh, Toast.LENGTH_LONG).show();
+                //Toast.makeText(MainActivity.this, R.string.refresh, Toast.LENGTH_LONG).show();
             }
         });
     }

@@ -27,8 +27,12 @@
     <string name="title_popular">Popular</string>
     <string name="title_top_rated">Top Rating</string>
     <string name="title_favorite">Favorite</string>
+    <string name="title_list">Details</string>
+    <string name="title_review">Reviewss</string>
+    <string name="title_trailer">Trailers</string>
     <string name="title_home">Home</string>
-    <string name="title_trailer">Trailers:</string>
+    <string name="title_trailers">Trailers:</string>
+    <string name="title_reviews">Reviews:</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
 
