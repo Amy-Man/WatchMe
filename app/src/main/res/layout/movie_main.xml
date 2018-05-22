@@ -39,11 +39,5 @@
         android:textColor="@color/colorBlack"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@id/rating_image" />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="invisible"
-        android:id="@+id/position_of_poster_in_movie_array"
-        />
 
 </android.support.constraint.ConstraintLayout>

@@ -1,10 +1,11 @@
 package com.avivamiriammandel.watchme;
 
+import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private List<Movie> movieList;
     private static final int WIDTH_OF_COLUMNS = 120;
     public static final String TAG = MoviesAdapter.class.getName();
+    BottomNavigationView navigation;
 
 
     @Override
@@ -47,20 +49,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        BottomNavigationView navigation = findViewById(R.id.navigation);
+        navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
         initViews();
 
-        swipeContainer = findViewById(R.id.swupe_layout);
-        swipeContainer.setColorSchemeResources(android.R.color.holo_orange_dark);
-        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                initViews();
-                Toast.makeText(MainActivity.this, R.string.refresh, Toast.LENGTH_LONG).show();
-            }
-        });
+
     }
 
     private void initViews() {
@@ -73,9 +67,9 @@ public class MainActivity extends AppCompatActivity {
 
         movieList = new ArrayList<>();
 
-        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-        float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
-        int numColumns = (int) (dpWidth / WIDTH_OF_COLUMNS);
+        final DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        final float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
+        final int numColumns = (int) (dpWidth / WIDTH_OF_COLUMNS);
         recyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this, numColumns));
 
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -89,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
 
         @Override
-        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        public boolean onNavigationItemSelected(@NonNull final MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.navigation_popular:
                     loadJSON();
@@ -99,8 +93,9 @@ public class MainActivity extends AppCompatActivity {
                     return true;
                 case R.id.navigation_favorite:
                     return true;
+                default:
+                    return false;
             }
-            return false;
         }
     };
 
@@ -114,14 +109,14 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            Client client = new Client();
-            Service apiService = Client.getClient().create(Service.class);
-            Call<MoviesResponse> call = apiService.getPopularMovies(BuildConfig.API_KEY);
+            final Client client = new Client();
+            final Service apiService = Client.getClient().create(Service.class);
+            final Call<MoviesResponse> call = apiService.getPopularMovies(BuildConfig.API_KEY);
             call.enqueue(new Callback<MoviesResponse>() {
                 @Override
                 public void onResponse(@NonNull Call<MoviesResponse> call, @NonNull Response<MoviesResponse> response) {
                     if (response.isSuccessful()) {
-                        MoviesResponse results = response.body();
+                        final MoviesResponse results = response.body();
                         List<Movie> movieList = null;
                         if (results != null) {
                             movieList = results.getResults();
@@ -130,15 +125,12 @@ public class MainActivity extends AppCompatActivity {
                         recyclerView = findViewById(R.id.recycler_view);
                         recyclerView.setAdapter(new MoviesAdapter(getApplicationContext(), movieList));
                         recyclerView.smoothScrollToPosition(0);
-                        if (swipeContainer.isRefreshing())
-                            swipeContainer.setRefreshing(false);
-
                         progressBar.setVisibility(View.INVISIBLE);
                         recyclerView.setVisibility(View.VISIBLE);
                     } else {
 
                         progressBar.setVisibility(View.INVISIBLE);
-                        ApiError apiError = ErrorUtils.parseError(response);
+                        final ApiError apiError = ErrorUtils.parseError(response);
                         Toast.makeText(MainActivity.this, apiError.getMessage(), Toast.LENGTH_LONG).show();
                         Log.e(TAG, "onResponse: " + apiError.getMessage() + " " + apiError.getStatusCode() + " " + apiError.getEndpoint());
                     }
@@ -147,11 +139,11 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onFailure(@NonNull Call<MoviesResponse> call, @NonNull Throwable t) {
                     progressBar.setVisibility(View.INVISIBLE);
-                    Toast.makeText(MainActivity.this, R.string.onFailureError, Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, R.string.onNoInternetError, Toast.LENGTH_LONG).show();
                     Log.d(TAG, t.getMessage());
                 }
             });
-        } catch (Exception e) {
+        } catch (final Exception e) {
             progressBar.setVisibility(View.INVISIBLE);
             Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_LONG).show();
             Log.d(TAG, e.getMessage());
@@ -184,9 +176,6 @@ public class MainActivity extends AppCompatActivity {
                         recyclerView = findViewById(R.id.recycler_view);
                         recyclerView.setAdapter(new MoviesAdapter(getApplicationContext(), movieList));
                         recyclerView.smoothScrollToPosition(0);
-                        if (swipeContainer.isRefreshing())
-                            swipeContainer.setRefreshing(false);
-
                         progressBar.setVisibility(View.INVISIBLE);
                         recyclerView.setVisibility(View.VISIBLE);
                     } else {
@@ -201,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onFailure(@NonNull Call<MoviesResponse> call, @NonNull Throwable t) {
                     progressBar.setVisibility(View.INVISIBLE);
-                    Toast.makeText(MainActivity.this, R.string.onFailureError, Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, R.string.onNoInternetError, Toast.LENGTH_LONG).show();
                     Log.d(TAG, t.getMessage());
                 }
             });
@@ -228,4 +217,17 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    public void energyBreakPointStart(final int stateId, final String stateDescription) {
+        final Intent stateUpdate = new Intent("com.quicinc.Trepn.UpdateAppState");
+        stateUpdate.putExtra("com.quicinc.Trepn.UpdateAppState.Value", stateId);
+        stateUpdate.putExtra("com.quicinc.Trepn.UpdateAppState.Value.Desc", stateDescription);
+        sendBroadcast(stateUpdate);
+    }// Generated  energyBreakPointStart method
+
+    public void energyBreakPointEnd() {
+        final Intent stateUpdate = new Intent("com.quicinc.Trepn.UpdateAppState");
+        stateUpdate.putExtra("com.quicinc.Trepn.UpdateAppState.Value", 0);
+        sendBroadcast(stateUpdate);
+    }// Generated  energyBreakPointEnd method
 }

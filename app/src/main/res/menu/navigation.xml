@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    android:backgroundTint="@android:color/holo_blue_dark"
+    >
 
     <item
         android:id="@+id/navigation_popular"
@@ -15,5 +17,6 @@
         android:id="@+id/navigation_favorite"
         android:icon="@drawable/ic_favorite_black_24px"
         android:title="@string/title_favorite" />
+
 
 </menu>

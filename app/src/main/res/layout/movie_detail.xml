@@ -1,26 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-    <ScrollView
+
+    <android.support.constraint.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
-        android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        tools:showIn="@layout/activity_detail"
-        android:id="@+id/detail_scroll_view"
-        tools:context=".DetailActivity"> <!--app:layout_behavior="@string/appbar_scrolling_view_behavior"-->
-        <android.support.constraint.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+    tools:showIn="@layout/activity_detail"
+    tools:context=".DetailActivity">
+
             <ImageView
                 android:id="@+id/backdrop_image_view"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:fitsSystemWindows="false"
-                android:scaleType="matrix"
+                android:layout_height="300dp"
+                android:scaleType="centerCrop"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
+
                 />
+        <android.support.v4.widget.NestedScrollView
+            android:paddingTop="300dp"
+            android:paddingBottom="40dp"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            app:layout_constraintLeft_toLeftOf="@id/backdrop_image_view"
+            app:layout_constraintTop_toBottomOf="@id/backdrop_image_view"
+            android:id="@+id/detail_scroll_view_movie_details">
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/constraint_layout_movie_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
 
             <TextView
                 android:id="@+id/text_view_user_rating"
@@ -31,7 +44,8 @@
                 android:textSize="15sp"
                 android:padding="@dimen/layout_padding"
                 tools:text="@string/rating"
-                app:layout_constraintTop_toBottomOf="@id/backdrop_image_view"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
                 />
             <me.zhanghai.android.materialratingbar.MaterialRatingBar
                 android:layout_width="wrap_content"
@@ -58,7 +72,12 @@
                 app:layout_constraintTop_toBottomOf="@id/text_view_user_rating"
 
                 />
-
+        <android.support.v4.widget.NestedScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/text_view_release_date"
+            android:paddingBottom="180dp"
+            >
             <TextView
                 android:id="@+id/text_view_plot_synopsis"
                 android:layout_width="wrap_content"
@@ -68,8 +87,46 @@
                 android:textSize="15sp"
                 android:padding="@dimen/layout_padding"
                 tools:text="@string/plot"
-                app:layout_constraintTop_toBottomOf="@+id/text_view_release_date"
                 />
+        </android.support.v4.widget.NestedScrollView>
+        </android.support.constraint.ConstraintLayout>
+    </android.support.v4.widget.NestedScrollView>
+    <android.support.v4.widget.NestedScrollView
+
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:id="@+id/detail_scroll_view_movie_recycler"
+        android:paddingTop="300dp"
+        android:paddingBottom="40dp"
+        app:layout_constraintLeft_toLeftOf="@id/backdrop_image_view"
+        app:layout_constraintTop_toBottomOf="@id/backdrop_image_view"
+        >
+        <android.support.constraint.ConstraintLayout
+               android:id="@+id/constraint_layout_movie_recycler"
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               >
+            <TextView
+                android:id="@+id/text_view_trailer_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:textSize="20sp"
+                tools:text="@string/title_trailer"
+                />
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recycler_view_trailer_details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintLeft_toLeftOf="@id/text_view_trailer_title"
+                app:layout_constraintTop_toBottomOf="@id/text_view_trailer_title"
+                android:clipToPadding="false"
+                android:scrollbars="vertical"
+                >
+            </android.support.v7.widget.RecyclerView>
+           </android.support.constraint.ConstraintLayout>
+    </android.support.v4.widget.NestedScrollView>
+
         </android.support.constraint.ConstraintLayout>
 
-    </ScrollView>
