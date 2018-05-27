@@ -1,7 +1,12 @@
 package com.avivamiriammandel.watchme;
 
+import android.annotation.SuppressLint;
+import android.content.AsyncQueryHandler;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -17,7 +22,10 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.avivamiriammandel.watchme.adapter.FavoritesAdapter;
 import com.avivamiriammandel.watchme.adapter.MoviesAdapter;
+import com.avivamiriammandel.watchme.data.FavoriteDbHelper;
+import com.avivamiriammandel.watchme.data.FavoriteProvider;
 import com.avivamiriammandel.watchme.error.ApiError;
 import com.avivamiriammandel.watchme.error.ErrorUtils;
 import com.avivamiriammandel.watchme.model.Movie;
@@ -39,9 +47,13 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private SwipeRefreshLayout swipeContainer;
     private List<Movie> movieList;
+    private FavoriteDbHelper favoriteDbHelper;
+    private AppCompatActivity activity = MainActivity.this;
     private static final int WIDTH_OF_COLUMNS = 120;
     public static final String TAG = MoviesAdapter.class.getName();
-    BottomNavigationView navigation;
+    private BottomNavigationView navigation;
+    private SharedPreferences sharedPreferences;
+
 
 
     @Override
@@ -53,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
         initViews();
-
 
     }
 
@@ -74,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(adapter);
+        favoriteDbHelper = new FavoriteDbHelper(activity);
 
 
         loadJSON();
@@ -92,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
                     loadJSON1();
                     return true;
                 case R.id.navigation_favorite:
+                    initViews1();
                     return true;
                 default:
                     return false;
@@ -108,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), R.string.apiKeyError, Toast.LENGTH_LONG).show();
                 return;
             }
-
+            sharedPreference();
             final Client client = new Client();
             final Service apiService = Client.getClient().create(Service.class);
             final Call<MoviesResponse> call = apiService.getPopularMovies(BuildConfig.API_KEY);
@@ -159,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), R.string.apiKeyError, Toast.LENGTH_LONG).show();
                 return;
             }
-
+            sharedPreference1();
             Client client = new Client();
             Service apiService = Client.getClient().create(Service.class);
             Call<MoviesResponse> call = apiService.getTopRatedMovies(BuildConfig.API_KEY);
@@ -202,32 +215,94 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+    private void  initViews1() {
+        progressBar = findViewById(R.id.progress);
+        progressBar.setIndeterminate(true);
+        progressBar.setVisibility(View.VISIBLE);
+
+        recyclerView = findViewById(R.id.recycler_view);
+        recyclerView.setVisibility(View.INVISIBLE);
+
+        movieList = new ArrayList<>();
+
+        final DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        final float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
+        final int numColumns = (int) (dpWidth / WIDTH_OF_COLUMNS);
+        recyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this, numColumns));
+
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        favoriteDbHelper = new FavoriteDbHelper(activity);
+
+        loadFavorites();
+
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_settings:
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+
+    @SuppressLint("StaticFieldLeak")
+    public void loadFavorites() {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                movieList.clear();
+                //FavoritesAdapter favoritesAdapter = new FavoritesAdapter();
+                //recyclerView.setAdapter(favoritesAdapter);
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                sharedPreference2();
+            }
+        }.execute();
+
+    }
+
+    public void sharedPreference(){
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        if (null != sharedPreferences) {
+            sharedPreferences.getBoolean(String.valueOf(R.string.preference_most_popular), true);
+            sharedPreferences.getBoolean(String.valueOf(R.string.preference_highest_rated), false);
+            sharedPreferences.getBoolean(String.valueOf(R.string.preference_favorites), false);
+        }else {
+            SharedPreferences.Editor editor =
+                    getSharedPreferences("com.avivamiriammandel.watchme.MainActivity",
+                            MODE_PRIVATE).edit();
+            editor.putBoolean(String.valueOf(R.string.preference_most_popular), true);
+            editor.putBoolean(String.valueOf(R.string.preference_highest_rated), false);
+            editor.putBoolean(String.valueOf(R.string.preference_favorites), false);
+            editor.commit();
         }
     }
 
-    public void energyBreakPointStart(final int stateId, final String stateDescription) {
-        final Intent stateUpdate = new Intent("com.quicinc.Trepn.UpdateAppState");
-        stateUpdate.putExtra("com.quicinc.Trepn.UpdateAppState.Value", stateId);
-        stateUpdate.putExtra("com.quicinc.Trepn.UpdateAppState.Value.Desc", stateDescription);
-        sendBroadcast(stateUpdate);
-    }// Generated  energyBreakPointStart method
+    public void sharedPreference1(){
 
-    public void energyBreakPointEnd() {
-        final Intent stateUpdate = new Intent("com.quicinc.Trepn.UpdateAppState");
-        stateUpdate.putExtra("com.quicinc.Trepn.UpdateAppState.Value", 0);
-        sendBroadcast(stateUpdate);
-    }// Generated  energyBreakPointEnd method
+    SharedPreferences.Editor editor =
+            getSharedPreferences("com.avivamiriammandel.watchme.MainActivity",
+                    MODE_PRIVATE).edit();
+    editor.putBoolean(String.valueOf(R.string.preference_most_popular), false);
+    editor.putBoolean(String.valueOf(R.string.preference_highest_rated), true);
+    editor.putBoolean(String.valueOf(R.string.preference_favorites), false);
+    editor.commit();
+
+    }
+
+    public void sharedPreference2(){
+
+    SharedPreferences.Editor editor =
+            getSharedPreferences("com.avivamiriammandel.watchme.MainActivity",
+                    MODE_PRIVATE).edit();
+    editor.putBoolean(String.valueOf(R.string.preference_most_popular), false);
+    editor.putBoolean(String.valueOf(R.string.preference_highest_rated), false);
+    editor.putBoolean(String.valueOf(R.string.preference_favorites), true);
+    editor.commit();
+    }
+
+
 }
+
+
+

@@ -8,12 +8,20 @@
     <string name="plot">Plot Synopsis</string>
     <string name="rating">User Rating</string>
     <string name="release">Release Date</string>
+    <string name="reviewed_by">Reviewed By:</string>
+    <string name="review">Review:</string>
+
+    <string name="no_reviews">
+
+        There are no reviews for this movie.</string>
+
     <string name="movies_parcelable_object">movies</string>
 
     <string name="preference_sort_order_label">Sort Order</string>
     <string name="preference_sort_order_key">sortOrder</string>
     <string name="preference_most_popular">Most Popular</string>
     <string name="preference_highest_rated">Highest Rated</string>
+    <string name="preference_favorites">Favorites</string>
 
     <string name="movie_content_description">Movie Thumbnail</string>
     <string name="movie_backdrop_content_description">Movie Backdrop</string>
