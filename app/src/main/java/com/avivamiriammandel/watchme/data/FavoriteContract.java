@@ -5,7 +5,7 @@ import android.provider.BaseColumns;
 
 public class FavoriteContract {
 
-    public static final String TABLE_NAME = "favorite";
+    public static final String TABLE_NAME = "favorite_movies";
     public static final String CONTENT_AUTHORITY = "com.avivamiriammandel.watchme";
     public static final Uri CONTENT_URI = new Uri.Builder()
             .scheme("content")
@@ -22,5 +22,6 @@ public class FavoriteContract {
         public static final String COLUMN_RELEASE_DATE = "release_date";
         public static final String COLUMN_PLOT_SYNOPSIS = "plot_synopsis";
     }
+
 }
 

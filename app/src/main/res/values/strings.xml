@@ -15,6 +15,10 @@
 
         There are no reviews for this movie.</string>
 
+   <string name="no_favorite_movies">
+
+        No favorites Yet</string>
+
     <string name="movies_parcelable_object">movies</string>
 
     <string name="preference_sort_order_label">Sort Order</string>

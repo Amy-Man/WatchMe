@@ -18,13 +18,26 @@ public class FavoriteDbHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "favorite.db";
     private static final int DATABASE_VERSION = 1;
 
-    public static final String LOG_TAG = "FAVORITE";
-
+    public static final String TAG = FavoriteDbHelper.class.getSimpleName();
     SQLiteOpenHelper dbHandler;
     SQLiteDatabase db;
 
+    final String SQL_CREATE_FAVORITE_TABLE =
+            "CREATE TABLE " + FavoriteContract.TABLE_NAME + " ( " +
+                    FavoriteContract.FavoriteEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    FavoriteContract.FavoriteEntry.COLUMN_MOVIE_ID + " INTEGER NOT NULL, " +
+                    FavoriteContract.FavoriteEntry.COLUMN_TITLE + " TEXT NOT NULL, " +
+                    FavoriteContract.FavoriteEntry.COLUMN_USER_RATING + " DOUBLE NOT NULL, " +
+                    FavoriteContract.FavoriteEntry.COLUMN_POSTER_PATH + " TEXT NOT NULL, " +
+                    FavoriteContract.FavoriteEntry.COLUMN_BACKDROP_PATH + " TEXT NOT NULL, " +
+                    FavoriteContract.FavoriteEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +
+                    FavoriteContract.FavoriteEntry.COLUMN_PLOT_SYNOPSIS + " TEXT NOT NULL " +
+                    " ); ";
+
+
     public FavoriteDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+
     }
 
     public FavoriteDbHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version, DatabaseErrorHandler errorHandler) {
@@ -44,19 +57,9 @@ public class FavoriteDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        final String SQL_CREATE_FAVORITE_TABLE =
-                "CREATE TABLE " + FavoriteContract.TABLE_NAME + " ( " +
-                        FavoriteContract.FavoriteEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        FavoriteContract.FavoriteEntry.COLUMN_MOVIE_ID + "INTEGER NOT NULL, " +
-                        FavoriteContract.FavoriteEntry.COLUMN_TITLE + "TEXT NOT NULL, " +
-                        FavoriteContract.FavoriteEntry.COLUMN_USER_RATING + "DOUBLE NOT NULL, " +
-                        FavoriteContract.FavoriteEntry.COLUMN_POSTER_PATH + "TEXT NOT NULL, " +
-                        FavoriteContract.FavoriteEntry.COLUMN_BACKDROP_PATH + "TEXT NOT NULL, " +
-                        FavoriteContract.FavoriteEntry.COLUMN_RELEASE_DATE + "TEXT NOT NULL, " +
-                        FavoriteContract.FavoriteEntry.COLUMN_PLOT_SYNOPSIS + "TEXT NOT NULL " +
-                        " ); ";
 
         sqLiteDatabase.execSQL(SQL_CREATE_FAVORITE_TABLE);
+        Log.d(TAG, "onCreate: Database");
 
         }
 

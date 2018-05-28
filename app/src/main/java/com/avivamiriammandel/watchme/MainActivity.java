@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.content.AsyncQueryHandler;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -24,6 +26,7 @@ import android.widget.Toast;
 
 import com.avivamiriammandel.watchme.adapter.FavoritesAdapter;
 import com.avivamiriammandel.watchme.adapter.MoviesAdapter;
+import com.avivamiriammandel.watchme.data.FavoriteContract;
 import com.avivamiriammandel.watchme.data.FavoriteDbHelper;
 import com.avivamiriammandel.watchme.data.FavoriteProvider;
 import com.avivamiriammandel.watchme.error.ApiError;
@@ -53,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
     public static final String TAG = MoviesAdapter.class.getName();
     private BottomNavigationView navigation;
     private SharedPreferences sharedPreferences;
+    private Cursor cursor;
+    private Boolean noFavorites = false;
 
 
 
@@ -244,16 +249,27 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected Void doInBackground(Void... voids) {
                 movieList.clear();
-                //FavoritesAdapter favoritesAdapter = new FavoritesAdapter();
-                //recyclerView.setAdapter(favoritesAdapter);
+                Uri favoriteMovies = FavoriteContract.CONTENT_URI;
+                cursor = MainActivity.this.getContentResolver().query(favoriteMovies, null, null, null, "");
 
+                noFavorites = false;
+                FavoritesAdapter favoritesAdapter = new FavoritesAdapter(cursor, MainActivity.this);
+                recyclerView.setAdapter(favoritesAdapter);
                 return null;
             }
 
             @Override
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
-                sharedPreference2();
+                if (recyclerView.getAdapter().getItemCount() == 0){
+                    Toast.makeText(MainActivity.this, R.string.no_favorite_movies, Toast.LENGTH_LONG).show();
+                    noFavorites = true;
+                    navigation.setSelectedItemId(R.id.navigation_popular);
+                } else {
+                    recyclerView.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.INVISIBLE);
+                    sharedPreference2();
+                }
             }
         }.execute();
 
@@ -263,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        if (null != sharedPreferences) {
+        if (null != sharedPreferences || !noFavorites) {
             sharedPreferences.getBoolean(String.valueOf(R.string.preference_most_popular), true);
             sharedPreferences.getBoolean(String.valueOf(R.string.preference_highest_rated), false);
             sharedPreferences.getBoolean(String.valueOf(R.string.preference_favorites), false);
@@ -274,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
             editor.putBoolean(String.valueOf(R.string.preference_most_popular), true);
             editor.putBoolean(String.valueOf(R.string.preference_highest_rated), false);
             editor.putBoolean(String.valueOf(R.string.preference_favorites), false);
-            editor.commit();
+            editor.apply();
         }
     }
 
@@ -286,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
     editor.putBoolean(String.valueOf(R.string.preference_most_popular), false);
     editor.putBoolean(String.valueOf(R.string.preference_highest_rated), true);
     editor.putBoolean(String.valueOf(R.string.preference_favorites), false);
-    editor.commit();
+    editor.apply();
 
     }
 
@@ -298,7 +314,7 @@ public class MainActivity extends AppCompatActivity {
     editor.putBoolean(String.valueOf(R.string.preference_most_popular), false);
     editor.putBoolean(String.valueOf(R.string.preference_highest_rated), false);
     editor.putBoolean(String.valueOf(R.string.preference_favorites), true);
-    editor.commit();
+    editor.apply();
     }
 
 

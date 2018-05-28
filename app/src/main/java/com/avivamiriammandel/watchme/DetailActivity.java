@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -23,7 +22,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,23 +29,20 @@ import com.avivamiriammandel.watchme.adapter.ReviewsAdapter;
 import com.avivamiriammandel.watchme.adapter.TrailersAdapter;
 import com.avivamiriammandel.watchme.data.FavoriteContract;
 import com.avivamiriammandel.watchme.data.FavoriteDbHelper;
-import com.avivamiriammandel.watchme.data.FavoriteUpdateService;
 import com.avivamiriammandel.watchme.error.ApiError;
-import com.avivamiriammandel.watchme.error.TrailerErrorUtils;
 import com.avivamiriammandel.watchme.error.ReviewErrorUtils;
+import com.avivamiriammandel.watchme.error.TrailerErrorUtils;
 import com.avivamiriammandel.watchme.glide.GlideApp;
 import com.avivamiriammandel.watchme.model.Movie;
-import com.avivamiriammandel.watchme.model.ReviewsResponse;
 import com.avivamiriammandel.watchme.model.Review;
+import com.avivamiriammandel.watchme.model.ReviewsResponse;
 import com.avivamiriammandel.watchme.model.Trailer;
 import com.avivamiriammandel.watchme.model.TrailersResponse;
 import com.avivamiriammandel.watchme.rest.Client;
 import com.avivamiriammandel.watchme.rest.Service;
-import com.github.florent37.glidepalette.BitmapPalette;
 import com.github.florent37.glidepalette.GlidePalette;
 import com.github.ivbaranov.mfb.MaterialFavoriteButton;
 
-import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,6 +77,8 @@ public class DetailActivity extends AppCompatActivity {
     private FavoriteDbHelper favoriteDbHelper;
     private Movie favoriteMovie;
     private AppCompatActivity activity = DetailActivity.this;
+    MaterialFavoriteButton materialFavoriteButton;
+    SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -115,7 +112,12 @@ public class DetailActivity extends AppCompatActivity {
         constraintLayoutDetails = findViewById(R.id.constraint_layout_movie_details);
         constraintLayoutRecycler = findViewById(R.id.constraint_layout_movie_recycler);
         constraintLayoutRecyclerReview = findViewById(R.id.constraint_layout_movie_recycler_review);
-
+        materialFavoriteButton = findViewById(R.id.button_favorite);
+         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        if ((sharedPreferences.contains("Favorite Added"))&&
+                (sharedPreferences.getBoolean("Favorite Added", true))){
+            materialFavoriteButton.isFavorite();
+        }
 
 
         final Intent intent = getIntent();
@@ -129,10 +131,8 @@ public class DetailActivity extends AppCompatActivity {
 
             fillViews();
 
-            SharedPreferences sharedPreferences =
-                    PreferenceManager.getDefaultSharedPreferences(context);
 
-            MaterialFavoriteButton materialFavoriteButton = findViewById(R.id.button_favorite);
+
             materialFavoriteButton.setOnFavoriteChangeListener(
                     new MaterialFavoriteButton.OnFavoriteChangeListener() {
                         @Override
@@ -142,7 +142,7 @@ public class DetailActivity extends AppCompatActivity {
                                         getSharedPreferences("com.avivamiriammandel.watchme.DetailActivity",
                                         MODE_PRIVATE).edit();
                                 editor.putBoolean("Favorite Added", true);
-                                editor.commit();
+                                editor.apply();
                                 saveFavorite();
                                 Snackbar.make(buttonView, "Added to favorite",
                                         Snackbar.LENGTH_LONG).show();
@@ -155,7 +155,7 @@ public class DetailActivity extends AppCompatActivity {
                                         getSharedPreferences("com.avivamiriammandel.watchme.DetailActivity",
                                         MODE_PRIVATE).edit();
                                 editor.putBoolean("Favorite Removed", true);
-                                editor.commit();
+                                editor.apply();
                                 deleteFavorite();
                                 Snackbar.make(buttonView, "Removed from favorite",
                                         Snackbar.LENGTH_LONG).show();
@@ -422,7 +422,7 @@ public class DetailActivity extends AppCompatActivity {
 
     public void saveFavorite(){
         favoriteDbHelper = new FavoriteDbHelper(activity);
-        Log.d(TAG, "saveFavorite: ");
+        Log.d(TAG, "saveFavorite:");
         ContentValues values = new ContentValues();
         values.put(FavoriteContract.FavoriteEntry.COLUMN_MOVIE_ID, movie.getId());
         values.put(FavoriteContract.FavoriteEntry.COLUMN_TITLE, movie.getTitle());
@@ -431,15 +431,16 @@ public class DetailActivity extends AppCompatActivity {
         values.put(FavoriteContract.FavoriteEntry.COLUMN_BACKDROP_PATH, movie.getBackdropPath());
         values.put(FavoriteContract.FavoriteEntry.COLUMN_RELEASE_DATE, movie.getReleaseDate());
         values.put(FavoriteContract.FavoriteEntry.COLUMN_PLOT_SYNOPSIS, movie.getOverview());
-        FavoriteUpdateService.insertNewFavorite(context, values);
+        context.getContentResolver().insert(FavoriteContract.CONTENT_URI, values);
         }
     private void deleteFavorite() {
         favoriteDbHelper = new FavoriteDbHelper(activity);
         Log.d(TAG, "deleteFavorite: ");
         ContentValues values = new ContentValues();
+        String[] args = new String[] {String.valueOf(movie.getId())} ;
         values.put(FavoriteContract.FavoriteEntry.COLUMN_MOVIE_ID, movie.getId());
-        Uri uri = Uri.parse(FavoriteContract.TABLE_NAME + FavoriteContract.FavoriteEntry.COLUMN_MOVIE_ID);
-        FavoriteUpdateService.deleteFavorite(context, uri, values);
+        context.getContentResolver().delete(FavoriteContract.CONTENT_URI, FavoriteContract.FavoriteEntry.COLUMN_MOVIE_ID,
+                args);
     }
 
 

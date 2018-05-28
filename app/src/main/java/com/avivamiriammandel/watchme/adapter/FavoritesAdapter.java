@@ -26,13 +26,14 @@ import com.github.florent37.glidepalette.GlidePalette;
 import java.text.DecimalFormat;
 import java.util.List;
 
-import static com.avivamiriammandel.watchme.MainActivity.TAG;
+
 
 public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.FavoritesViewHolder> {
 
     Cursor cursor;
     private Context context;
     private List<Movie> favoriteMoviesList;
+    private static final String TAG = FavoritesAdapter.class.getSimpleName();
 
     public FavoritesAdapter(Cursor cursor, Context context) {
         this.cursor = cursor;
@@ -52,11 +53,11 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.Favo
     public void onBindViewHolder(@NonNull FavoritesViewHolder holder, int position) {
         cursor.moveToPosition(position);
         holder.title.setText(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_TITLE)));
-        Double voteDoubleSpare = cursor.getDouble(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_USER_RATING));
-        DecimalFormat f = new DecimalFormat("##.0");
-        String vote = (f.format(voteDoubleSpare));
-        String ratingOutOfTen = vote + " /" + "10";
-        holder.userRating.setText(ratingOutOfTen);
+        //Double voteDoubleSpare = cursor.getDouble(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_USER_RATING));
+        //DecimalFormat f = new DecimalFormat("##.0");
+        //String vote = (f.format(voteDoubleSpare));
+        //String ratingOutOfTen = vote + " /" + "10";
+        holder.userRating.setText("");
         String thumbnailUrl = (cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_POSTER_PATH)));
         try {
             GlideApp.with(context)
