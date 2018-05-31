@@ -32,6 +32,7 @@
     <string name="rating_content_description">Rating</string>
 
     <string name="refresh">Movies Refreshed</string>
+    <string name="favorite_movies">favorite movies</string>
     <string name="apiKeyError">Please obtain an Api Key from themoviedb.org</string>
     <string name="onNoInternetError">Error connecting to the internet</string>
     <string name="unknownError">Unknown Error</string>

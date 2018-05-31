@@ -1,9 +1,11 @@
 package com.avivamiriammandel.watchme;
 
+import android.arch.lifecycle.LiveData;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -27,12 +29,13 @@ import android.widget.Toast;
 
 import com.avivamiriammandel.watchme.adapter.ReviewsAdapter;
 import com.avivamiriammandel.watchme.adapter.TrailersAdapter;
-import com.avivamiriammandel.watchme.data.FavoriteContract;
-import com.avivamiriammandel.watchme.data.FavoriteDbHelper;
+
+import com.avivamiriammandel.watchme.database.AppDatabase;
 import com.avivamiriammandel.watchme.error.ApiError;
 import com.avivamiriammandel.watchme.error.ReviewErrorUtils;
 import com.avivamiriammandel.watchme.error.TrailerErrorUtils;
 import com.avivamiriammandel.watchme.glide.GlideApp;
+import com.avivamiriammandel.watchme.glide.MoviesAppGlideModule;
 import com.avivamiriammandel.watchme.model.Movie;
 import com.avivamiriammandel.watchme.model.Review;
 import com.avivamiriammandel.watchme.model.ReviewsResponse;
@@ -40,6 +43,7 @@ import com.avivamiriammandel.watchme.model.Trailer;
 import com.avivamiriammandel.watchme.model.TrailersResponse;
 import com.avivamiriammandel.watchme.rest.Client;
 import com.avivamiriammandel.watchme.rest.Service;
+import com.avivamiriammandel.watchme.viewmodel.AppExecutors;
 import com.github.florent37.glidepalette.GlidePalette;
 import com.github.ivbaranov.mfb.MaterialFavoriteButton;
 
@@ -74,8 +78,7 @@ public class DetailActivity extends AppCompatActivity {
     ConstraintLayout constraintLayoutDetails, constraintLayoutRecycler,
             constraintLayoutRecyclerReview;
     Boolean recyclerNull = false;
-    private FavoriteDbHelper favoriteDbHelper;
-    private Movie favoriteMovie;
+
     private AppCompatActivity activity = DetailActivity.this;
     MaterialFavoriteButton materialFavoriteButton;
     SharedPreferences sharedPreferences;
@@ -113,11 +116,17 @@ public class DetailActivity extends AppCompatActivity {
         constraintLayoutRecycler = findViewById(R.id.constraint_layout_movie_recycler);
         constraintLayoutRecyclerReview = findViewById(R.id.constraint_layout_movie_recycler_review);
         materialFavoriteButton = findViewById(R.id.button_favorite);
-         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        if ((sharedPreferences.contains("Favorite Added"))&&
-                (sharedPreferences.getBoolean("Favorite Added", true))){
-            materialFavoriteButton.isFavorite();
-        }
+         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                if ((key == "Favorite Added") && (sharedPreferences.getBoolean("Favorite Added", false))) {
+                    materialFavoriteButton.setFavorite(true);
+                } else {
+                    materialFavoriteButton.setFavorite(false);
+                }
+            }
+        });
 
 
         final Intent intent = getIntent();
@@ -149,7 +158,7 @@ public class DetailActivity extends AppCompatActivity {
                                 } else {
 
                                 int movieId = movie.getId();
-                                favoriteDbHelper = new FavoriteDbHelper(activity);
+
                                 //favoriteDbHelper.deleteFavorite(movieId);
                                 SharedPreferences.Editor editor =
                                         getSharedPreferences("com.avivamiriammandel.watchme.DetailActivity",
@@ -368,6 +377,8 @@ public class DetailActivity extends AppCompatActivity {
             Log.d(TAG, "on Exception" +e.getMessage());
         }
     }
+
+
     private void loadJSON1() {
         int movieId = movie.getId();
         try {
@@ -420,28 +431,50 @@ public class DetailActivity extends AppCompatActivity {
         }
     }
 
-    public void saveFavorite(){
-        favoriteDbHelper = new FavoriteDbHelper(activity);
-        Log.d(TAG, "saveFavorite:");
-        ContentValues values = new ContentValues();
-        values.put(FavoriteContract.FavoriteEntry.COLUMN_MOVIE_ID, movie.getId());
-        values.put(FavoriteContract.FavoriteEntry.COLUMN_TITLE, movie.getTitle());
-        values.put(FavoriteContract.FavoriteEntry.COLUMN_USER_RATING, movie.getVoteAverage());
-        values.put(FavoriteContract.FavoriteEntry.COLUMN_POSTER_PATH, movie.getPosterPath());
-        values.put(FavoriteContract.FavoriteEntry.COLUMN_BACKDROP_PATH, movie.getBackdropPath());
-        values.put(FavoriteContract.FavoriteEntry.COLUMN_RELEASE_DATE, movie.getReleaseDate());
-        values.put(FavoriteContract.FavoriteEntry.COLUMN_PLOT_SYNOPSIS, movie.getOverview());
-        context.getContentResolver().insert(FavoriteContract.CONTENT_URI, values);
-        }
-    private void deleteFavorite() {
-        favoriteDbHelper = new FavoriteDbHelper(activity);
-        Log.d(TAG, "deleteFavorite: ");
-        ContentValues values = new ContentValues();
-        String[] args = new String[] {String.valueOf(movie.getId())} ;
-        values.put(FavoriteContract.FavoriteEntry.COLUMN_MOVIE_ID, movie.getId());
-        context.getContentResolver().delete(FavoriteContract.CONTENT_URI, FavoriteContract.FavoriteEntry.COLUMN_MOVIE_ID,
-                args);
+    public void saveFavorite() {
+        final Movie favoriteMovie = new Movie(
+                movie.getId(),
+                movie.getVoteAverage(),
+                movie.getTitle(),
+                movie.getPosterPath(),
+                movie.getBackdropPath(),
+                movie.getOverview(),
+                movie.getReleaseDate()
+        );
+        final AppDatabase database = AppDatabase.getInstance(context);
+
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                //if (!(movie.getId().equals(database.movieDao().loadMovieById(movie.getId()).getValue().getId()))) {
+                    database.movieDao().insertMovie(favoriteMovie);
+                //}
+            }
+        });
     }
+
+    private void deleteFavorite() {
+        final Movie favoriteMovie = new Movie(
+                movie.getId(),
+                movie.getVoteAverage(),
+                movie.getTitle(),
+                movie.getPosterPath(),
+                movie.getBackdropPath(),
+                movie.getOverview(),
+                movie.getReleaseDate()
+        );
+        final AppDatabase database = AppDatabase.getInstance(context);
+
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                //if (movie.getId().equals(database.movieDao().loadMovieById(movie.getId()).getValue().getId())) {
+                    database.movieDao().deleteMovie(favoriteMovie);
+                //}
+            }
+        });
+    }
+
 
 
 

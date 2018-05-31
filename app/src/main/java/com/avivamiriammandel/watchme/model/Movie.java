@@ -3,23 +3,36 @@ package com.avivamiriammandel.watchme.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.Parcelable.Creator;
+
+import com.avivamiriammandel.watchme.R;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+@Entity (tableName = "favorite_movies")
 public class Movie implements Serializable, Parcelable {
 
+
+
+    @ColumnInfo(name = "vote_count")
     @SerializedName("vote_count")
     @Expose
     private Integer voteCount;
+    @PrimaryKey
     @SerializedName("id")
     @Expose
     private Integer id;
     @SerializedName("video")
     @Expose
     private Boolean video;
+    @ColumnInfo(name = "vote_average")
     @SerializedName("vote_average")
     @Expose
     private Double voteAverage;
@@ -29,18 +42,23 @@ public class Movie implements Serializable, Parcelable {
     @SerializedName("popularity")
     @Expose
     private Double popularity;
+    @ColumnInfo(name = "poster_path")
     @SerializedName("poster_path")
     @Expose
     private String posterPath;
+    @ColumnInfo(name = "original_language")
     @SerializedName("original_language")
     @Expose
     private String originalLanguage;
+    @ColumnInfo(name = "original_title")
     @SerializedName("original_title")
     @Expose
     private String originalTitle;
+    @Ignore
     @SerializedName("genre_ids")
     @Expose
     private List<Integer> genreIds = null;
+    @ColumnInfo(name = "backdrop_path")
     @SerializedName("backdrop_path")
     @Expose
     private String backdropPath;
@@ -50,13 +68,24 @@ public class Movie implements Serializable, Parcelable {
     @SerializedName("overview")
     @Expose
     private String overview;
+    @ColumnInfo(name = "release_date")
     @SerializedName("release_date")
     @Expose
     private String releaseDate;
     private final static long serialVersionUID = 2018853523604119984L;
 
-
+    @Ignore
     public Movie() {
+    }
+
+    public Movie(Integer id, Double voteAverage, String title, String posterPath, String backdropPath, String overview, String releaseDate) {
+        this.id = id;
+        this.voteAverage = voteAverage;
+        this.title = title;
+        this.posterPath = posterPath;
+        this.backdropPath = backdropPath;
+        this.overview = overview;
+        this.releaseDate = releaseDate;
     }
 
     public static final String IMAGE_BASE_URL = "http://image.tmdb.org/t/p/";

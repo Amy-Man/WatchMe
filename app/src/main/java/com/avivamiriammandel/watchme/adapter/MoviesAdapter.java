@@ -1,9 +1,12 @@
 package com.avivamiriammandel.watchme.adapter;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -18,7 +21,9 @@ import android.widget.TextView;
 import com.avivamiriammandel.watchme.DetailActivity;
 import com.avivamiriammandel.watchme.R;
 import com.avivamiriammandel.watchme.glide.GlideApp;
+import com.avivamiriammandel.watchme.glide.MoviesAppGlideModule;
 import com.avivamiriammandel.watchme.model.Movie;
+import com.avivamiriammandel.watchme.viewmodel.MainViewModel;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.request.ErrorRequestCoordinator;
@@ -84,6 +89,20 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesView
     @Override
     public int getItemCount() {
         return movieList.size();
+    }
+
+
+    public List<Movie> getMovies() {
+        return movieList;
+    }
+
+    /**
+     * When data changes, this method updates the list of movies
+     * and notifies the adapter to use the new values on it
+     */
+    public void setMovies(List<Movie> movieList) {
+        this.movieList = movieList;
+        notifyDataSetChanged();
     }
 
     public class MoviesViewHolder extends RecyclerView.ViewHolder{
