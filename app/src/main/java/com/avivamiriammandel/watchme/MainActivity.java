@@ -8,6 +8,7 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -55,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView navigation;
     private SharedPreferences sharedPreferences;
     private Cursor cursor;
-    private Boolean noFavorites = false;
+    private Boolean noFavorites = false, hasMovies = false;
 
 
     @Override
@@ -89,7 +90,6 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
 
-
         loadJSON();
     }
 
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
                     initViews1();
                     return true;
                 default:
-                    return false;
+                    return true;
             }
         }
     };
@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), R.string.apiKeyError, Toast.LENGTH_LONG).show();
                 return;
             }
-            sharedPreference();
+
             final Client client = new Client();
             final Service apiService = Client.getClient().create(Service.class);
             final Call<MoviesResponse> call = apiService.getPopularMovies(BuildConfig.API_KEY);
@@ -174,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), R.string.apiKeyError, Toast.LENGTH_LONG).show();
                 return;
             }
-            sharedPreference1();
+
             Client client = new Client();
             Service apiService = Client.getClient().create(Service.class);
             Call<MoviesResponse> call = apiService.getTopRatedMovies(BuildConfig.API_KEY);
@@ -225,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setVisibility(View.INVISIBLE);
 
-        movieList = new ArrayList<>();
+
 
         final DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         final float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
@@ -244,92 +244,30 @@ public class MainActivity extends AppCompatActivity {
     public void loadFavorites() {
 
 
-        noFavorites = false;
-        final AppDatabase database = AppDatabase.getInstance(MainActivity.this);
 
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
-            @Override
-            public void run() {
-                {
-                    final MainViewModel viewModel = ViewModelProviders.of(MainActivity.this).get(MainViewModel.class);
-                    viewModel.getMovies().observe(MainActivity.this, new Observer<List<Movie>>() {
-                        @Override
-                        public void onChanged(@Nullable List<Movie> movies) {
-                            if (viewModel.getMovies().getValue()!=null)
-                            movieList.addAll(viewModel.getMovies().getValue());
-                        }
-                    });
-                }
-            }
-        });
-        recyclerView.setAdapter(new MoviesAdapter(getApplicationContext(), movieList));
-        recyclerView.smoothScrollToPosition(0);
-        recyclerView.setAdapter(adapter);
-
-        if (movieList.size() == 0) {
-            navigation.setSelectedItemId(R.id.navigation_popular);
-            sharedPreference();
-            Toast.makeText(MainActivity.this, R.string.no_favorite_movies, Toast.LENGTH_LONG).show();
-        } else {
-            setupViewModel();
-            recyclerView.setVisibility(View.VISIBLE);
-            progressBar.setVisibility(View.INVISIBLE);
-            sharedPreference2();
-        }
-
-
-    }
-
-
-    public void sharedPreference() {
-
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-
-            SharedPreferences.Editor editor =
-                    getSharedPreferences("com.avivamiriammandel.watchme.MainActivity",
-                            MODE_PRIVATE).edit();
-            editor.putBoolean(String.valueOf(R.string.preference_most_popular), true);
-            editor.putBoolean(String.valueOf(R.string.preference_highest_rated), false);
-            editor.putBoolean(String.valueOf(R.string.preference_favorites), false);
-            editor.apply();
-
-    }
-
-    public void sharedPreference1() {
-
-        SharedPreferences.Editor editor =
-                getSharedPreferences("com.avivamiriammandel.watchme",
-                        MODE_PRIVATE).edit();
-        editor.putBoolean(String.valueOf(R.string.preference_most_popular), false);
-        editor.putBoolean(String.valueOf(R.string.preference_highest_rated), true);
-        editor.putBoolean(String.valueOf(R.string.preference_favorites), false);
-        editor.apply();
-
-    }
-
-    public void sharedPreference2() {
-
-        SharedPreferences.Editor editor =
-                getSharedPreferences("com.avivamiriammandel.watchme",
-                        MODE_PRIVATE).edit();
-        editor.putBoolean(String.valueOf(R.string.preference_most_popular), false);
-        editor.putBoolean(String.valueOf(R.string.preference_highest_rated), false);
-        editor.putBoolean(String.valueOf(R.string.preference_favorites), true);
-        editor.apply();
-    }
-    private void setupViewModel() {
-        final MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
-        viewModel.getMovies().observe(this, new Observer<List<Movie>>() {
+        final MainViewModel viewModel = ViewModelProviders.of(MainActivity.this).get(MainViewModel.class);
+        viewModel.getMovies().observe(MainActivity.this, new Observer<List<Movie>>() {
             @Override
             public void onChanged(@Nullable List<Movie> movies) {
                 Log.d(TAG, "Updating list of movies from LiveData in ViewModel");
-                if (viewModel.getMovies().getValue() != null)
-                movieList.addAll(viewModel.getMovies().getValue());
+                if (movies != null) {
+                    adapter = new MoviesAdapter(MainActivity.this, movies );
+                    recyclerView.setAdapter(adapter);
+                    recyclerView.smoothScrollToPosition(0);
+
+                    recyclerView.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.INVISIBLE);
+
+                } else {
+                    navigation.setSelectedItemId(R.id.navigation_popular);
+                    Toast.makeText(MainActivity.this, R.string.no_favorite_movies, Toast.LENGTH_LONG).show();
+                }
             }
         });
-    }
-}
 
+
+    }
+
+}
 
 

@@ -1,6 +1,9 @@
 package com.avivamiriammandel.watchme;
 
 import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
+import android.arch.persistence.room.Database;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -44,6 +47,8 @@ import com.avivamiriammandel.watchme.model.TrailersResponse;
 import com.avivamiriammandel.watchme.rest.Client;
 import com.avivamiriammandel.watchme.rest.Service;
 import com.avivamiriammandel.watchme.viewmodel.AppExecutors;
+import com.avivamiriammandel.watchme.viewmodel.MovieViewModel;
+import com.avivamiriammandel.watchme.viewmodel.MovieViewModelFactory;
 import com.github.florent37.glidepalette.GlidePalette;
 import com.github.ivbaranov.mfb.MaterialFavoriteButton;
 
@@ -56,11 +61,11 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.avivamiriammandel.watchme.MainActivity.TAG;
 
 public class DetailActivity extends AppCompatActivity {
 
-
+    private static final String TAG = DetailActivity.class.getSimpleName();
+    AppDatabase db;
     Context context;
     Movie movie;
     android.support.v4.widget.NestedScrollView detailScrollView, detailScrollViewRecycler,
@@ -77,7 +82,7 @@ public class DetailActivity extends AppCompatActivity {
     BottomNavigationView navigation;
     ConstraintLayout constraintLayoutDetails, constraintLayoutRecycler,
             constraintLayoutRecyclerReview;
-    Boolean recyclerNull = false;
+    Boolean recyclerNull = false, isFavorite = false;
 
     private AppCompatActivity activity = DetailActivity.this;
     MaterialFavoriteButton materialFavoriteButton;
@@ -116,17 +121,6 @@ public class DetailActivity extends AppCompatActivity {
         constraintLayoutRecycler = findViewById(R.id.constraint_layout_movie_recycler);
         constraintLayoutRecyclerReview = findViewById(R.id.constraint_layout_movie_recycler_review);
         materialFavoriteButton = findViewById(R.id.button_favorite);
-         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        sharedPreferences.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
-            @Override
-            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                if ((key == "Favorite Added") && (sharedPreferences.getBoolean("Favorite Added", false))) {
-                    materialFavoriteButton.setFavorite(true);
-                } else {
-                    materialFavoriteButton.setFavorite(false);
-                }
-            }
-        });
 
 
         final Intent intent = getIntent();
@@ -140,38 +134,60 @@ public class DetailActivity extends AppCompatActivity {
 
             fillViews();
 
+            db = AppDatabase.getInstance(getApplicationContext());
+
+            MovieViewModelFactory modelFactory = new MovieViewModelFactory(db, movie.getId());
+            final MovieViewModel movieViewModel = ViewModelProviders.of(this, modelFactory).get(MovieViewModel.class);
+            movieViewModel.getMovie().observe(DetailActivity.this, new Observer<Movie>() {
+                @Override
+                public void onChanged(@Nullable Movie movie) {
+                    if (movie == null) {
+                        movieViewModel.getMovie().removeObserver(this);
+                        materialFavoriteButton.setFavorite(false);
+                        // deselect the favorite button
+                    } else {
+                        movieViewModel.getMovie().removeObserver(this);
+                        materialFavoriteButton.setFavorite(true);
+                        // select the button
+                    }
+                }
+            });
+
+
+
 
 
             materialFavoriteButton.setOnFavoriteChangeListener(
                     new MaterialFavoriteButton.OnFavoriteChangeListener() {
                         @Override
-                        public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
-                            if (favorite){
-                                SharedPreferences.Editor editor =
-                                        getSharedPreferences("com.avivamiriammandel.watchme.DetailActivity",
-                                        MODE_PRIVATE).edit();
-                                editor.putBoolean("Favorite Added", true);
-                                editor.apply();
-                                saveFavorite();
-                                Snackbar.make(buttonView, "Added to favorite",
-                                        Snackbar.LENGTH_LONG).show();
-                                } else {
+                        public void onFavoriteChanged(final MaterialFavoriteButton buttonView, final boolean favorite) {
+                            MovieViewModelFactory modelFactory = new MovieViewModelFactory(db, movie.getId());
+                            final MovieViewModel movieViewModel = ViewModelProviders.of(DetailActivity.this, modelFactory).get(MovieViewModel.class);
+                            movieViewModel.getMovie().observe(DetailActivity.this, new Observer<Movie>() {
+                                @Override
+                                public void onChanged(@Nullable Movie movie) {
+                                    Log.d(TAG, "onFavoriteChanged: " + favorite + movieViewModel.getMovie());
+                                    if ((favorite) && (movie == null)) {
+                                        Log.d(TAG, "onFavoriteChanged: saved favorite" );
+                                        movieViewModel.getMovie().removeObserver(this);
+                                        saveFavorite();
+                                        Snackbar.make(buttonView, "Added to favorite",
+                                                Snackbar.LENGTH_LONG).show();
 
-                                int movieId = movie.getId();
-
-                                //favoriteDbHelper.deleteFavorite(movieId);
-                                SharedPreferences.Editor editor =
-                                        getSharedPreferences("com.avivamiriammandel.watchme.DetailActivity",
-                                        MODE_PRIVATE).edit();
-                                editor.putBoolean("Favorite Removed", true);
-                                editor.apply();
-                                deleteFavorite();
-                                Snackbar.make(buttonView, "Removed from favorite",
-                                        Snackbar.LENGTH_LONG).show();
+                                    } else if (!(favorite) && (movie != null)) {
+                                        Log.d(TAG, "onFavoriteChanged: deleted favorite" );
+                                        movieViewModel.getMovie().removeObserver(this);
+                                        Snackbar.make(buttonView, "Removed from favorite",
+                                                Snackbar.LENGTH_LONG).show();
+                                        deleteFavorite();
+                                    }
                                 }
-                        }
-                    }
-            );
+                            });
+                            return;
+                                }
+
+                            });
+
 
 
             initViews();
@@ -440,7 +456,10 @@ public class DetailActivity extends AppCompatActivity {
                 movie.getBackdropPath(),
                 movie.getOverview(),
                 movie.getReleaseDate()
+                
         );
+
+        Log.d(TAG, "saveFavorite: " + movie.getPosterPath());
         final AppDatabase database = AppDatabase.getInstance(context);
 
         AppExecutors.getInstance().diskIO().execute(new Runnable() {

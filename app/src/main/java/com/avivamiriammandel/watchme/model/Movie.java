@@ -140,8 +140,12 @@ public class Movie implements Serializable, Parcelable {
     }
 
     public String getPosterPath() {
-        return IMAGE_BASE_URL+THUMBNAIL_SIZE+posterPath;
+        if (!(posterPath.contains(IMAGE_BASE_URL)))
+            return IMAGE_BASE_URL+THUMBNAIL_SIZE+posterPath;
+        else
+            return posterPath;
     }
+
 
     public void setPosterPath(String posterPath) {
         this.posterPath = posterPath;

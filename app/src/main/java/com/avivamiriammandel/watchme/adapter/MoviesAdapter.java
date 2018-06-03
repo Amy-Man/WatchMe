@@ -63,6 +63,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesView
         String ratingOutOfTen = vote + " /" + "10";
         holder.userRating.setText(ratingOutOfTen);
         String thumbnailUrl = movieList.get(position).getPosterPath();
+        Log.d(TAG, "onBindViewHolder: "+ thumbnailUrl);
         try {
             GlideApp.with(context)
                     .load(thumbnailUrl)
@@ -102,7 +103,6 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesView
      */
     public void setMovies(List<Movie> movieList) {
         this.movieList = movieList;
-        notifyDataSetChanged();
     }
 
     public class MoviesViewHolder extends RecyclerView.ViewHolder{

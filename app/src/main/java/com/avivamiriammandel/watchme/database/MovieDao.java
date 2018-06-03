@@ -21,9 +21,6 @@ public interface MovieDao {
     @Insert
     void insertMovie(Movie movie);
 
-    /*@Update(onConflict = OnConflictStrategy.REPLACE)
-    void updateTask(TaskEntry taskEntry);*/
-
     @Delete
     void deleteMovie(Movie movie);
 
