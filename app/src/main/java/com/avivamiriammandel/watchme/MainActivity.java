@@ -54,9 +54,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int WIDTH_OF_COLUMNS = 120;
     public static final String TAG = MoviesAdapter.class.getName();
     private BottomNavigationView navigation;
-    private SharedPreferences sharedPreferences;
-    private Cursor cursor;
-    private Boolean noFavorites = false, hasMovies = false;
 
 
     @Override
@@ -268,6 +265,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+
+        super.onSaveInstanceState(outState);
+    }
 }
 
 

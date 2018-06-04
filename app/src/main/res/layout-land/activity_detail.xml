@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_detail_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:layout_editor_absoluteY="25dp">
+
+    <ScrollView
+        android:id="@+id/scroll_view_detail_main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/activity_detail_constraint_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="60dp"
+                app:layout_collapseMode="pin"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
+            <!--ScrollView
+           android:id="@+id/scroll_view_one"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           -->
+            <android.support.constraint.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/constraint_detail"
+                tools:showIn="@layout/activity_detail"
+                tools:context=".DetailActivity">
+
+                <ImageView
+                    android:id="@+id/backdrop_image_view"
+                    android:layout_width="300dp"
+                    android:layout_height="300dp"
+                    android:scaleType="matrix"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+
+                    />
+                <android.support.v4.widget.NestedScrollView
+                    android:paddingBottom="40dp"
+                    android:layout_height="wrap_content"
+                    android:layout_width="300dp"
+                    android:paddingStart="300dp"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:id="@+id/detail_scroll_view_movie_details">
+
+                    <android.support.constraint.ConstraintLayout
+                        android:id="@+id/constraint_layout_movie_details"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+
+                        <TextView
+                            android:id="@+id/text_view_user_rating"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/layout_margin_left"
+                            android:layout_marginTop="@dimen/layout_margin_top"
+                            android:padding="@dimen/layout_padding"
+                            android:textSize="15sp"
+                            app:layout_constraintLeft_toLeftOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            tools:text="@string/rating" />
+
+                        <me.zhanghai.android.materialratingbar.MaterialRatingBar
+                            android:id="@+id/rating_bar"
+                            style="@style/Widget.MaterialRatingBar.RatingBar"
+                            android:layout_width="wrap_content"
+                            android:layout_height="20dp"
+                            android:isIndicator="true"
+                            android:stepSize="0.01"
+                            app:layout_constraintBottom_toBottomOf="@id/text_view_user_rating"
+                            app:layout_constraintLeft_toRightOf="@id/text_view_user_rating"
+                            app:layout_constraintTop_toTopOf="@id/text_view_user_rating"
+                            app:mrb_progressTint="@color/colorYellow"
+                            tools:rating="3.5" />
+
+                        <TextView
+                            android:id="@+id/text_view_release_date"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/layout_margin_left"
+                            android:layout_marginTop="@dimen/layout_margin_top"
+                            android:padding="@dimen/layout_padding"
+                            android:textSize="15sp"
+                            app:layout_constraintTop_toBottomOf="@id/text_view_user_rating"
+                            tools:text="@string/release"
+
+                            />
+
+                        <com.github.ivbaranov.mfb.MaterialFavoriteButton
+                            android:id="@+id/button_favorite"
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+                            android:background="@color/colorAccent"
+                            app:mfb_type="heart"
+                            app:layout_constraintBottom_toBottomOf="@id/text_view_release_date"
+                            app:layout_constraintLeft_toRightOf="@id/text_view_release_date"
+                            app:layout_constraintTop_toTopOf="@id/text_view_release_date"
+
+                            />
+
+                        <android.support.v4.widget.NestedScrollView
+                            android:layout_width="300dp"
+                            android:layout_height="wrap_content"
+                            android:paddingBottom="180dp"
+                            app:layout_constraintTop_toBottomOf="@+id/text_view_release_date"
+                            app:layout_constraintLeft_toLeftOf="@id/text_view_release_date"
+                            tools:layout_editor_absoluteX="8dp">
+
+                            <TextView
+                                android:id="@+id/text_view_plot_synopsis"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/layout_margin_left"
+                                android:layout_marginTop="@dimen/layout_margin_top"
+                                android:padding="@dimen/layout_padding"
+                                android:textSize="15sp"
+                                tools:text="@string/plot" />
+                        </android.support.v4.widget.NestedScrollView>
+                    </android.support.constraint.ConstraintLayout>
+                </android.support.v4.widget.NestedScrollView>
+                <android.support.v4.widget.NestedScrollView
+
+                    android:layout_height="wrap_content"
+                    android:layout_width="300dp"
+                    android:paddingStart="300dp"
+                    android:id="@+id/detail_scroll_view_movie_recycler"
+                    android:paddingBottom="40dp"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    >
+                    <android.support.constraint.ConstraintLayout
+                        android:id="@+id/constraint_layout_movie_recycler"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        >
+                        <TextView
+                            android:id="@+id/text_view_trailer_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:layout_constraintLeft_toLeftOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:textSize="20sp"
+                            tools:text="@string/title_trailer"
+                            />
+                        <android.support.v7.widget.RecyclerView
+                            android:id="@+id/recycler_view_trailer_details"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:layout_constraintLeft_toLeftOf="@id/text_view_trailer_title"
+                            app:layout_constraintTop_toBottomOf="@id/text_view_trailer_title"
+                            android:clipToPadding="false"
+                            android:scrollbars="vertical"
+                            >
+                        </android.support.v7.widget.RecyclerView>
+                    </android.support.constraint.ConstraintLayout>
+                </android.support.v4.widget.NestedScrollView>
+
+                <android.support.v4.widget.NestedScrollView
+
+                    android:layout_height="wrap_content"
+                    android:layout_width="300dp"
+                    android:paddingStart="300dp"
+                    android:id="@+id/detail_scroll_view_movie_recycler_review"
+                    android:paddingBottom="40dp"
+                    app:layout_constraintLeft_toRightOf="@id/backdrop_image_view"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    >
+                    <android.support.constraint.ConstraintLayout
+                        android:id="@+id/constraint_layout_movie_recycler_review"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        >
+                        <TextView
+                            android:id="@+id/text_view_review_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:layout_constraintLeft_toLeftOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:textSize="20sp"
+                            tools:text="@string/title_review"
+                            />
+                        <android.support.v7.widget.RecyclerView
+                            android:id="@+id/recycler_view_review_details"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:layout_constraintLeft_toLeftOf="@id/text_view_review_title"
+                            app:layout_constraintTop_toBottomOf="@id/text_view_review_title"
+                            android:clipToPadding="false"
+                            android:scrollbars="vertical"
+                            >
+                        </android.support.v7.widget.RecyclerView>
+                    </android.support.constraint.ConstraintLayout>
+                </android.support.v4.widget.NestedScrollView>
+
+            </android.support.constraint.ConstraintLayout>
+
+
+            <!--/ScrollView-->
+        </android.support.constraint.ConstraintLayout>
+    </ScrollView>
+
+    <android.support.design.widget.BottomNavigationView
+        android:id="@+id/navigation_detail"
+        android:layout_width="match_parent"
+        android:layout_height="170dp"
+        android:layout_gravity="center"
+        android:background="?android:attr/windowBackground"
+        android:paddingBottom="70dp"
+        app:menu="@menu/navigation_details"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scroll_view_detail_main"
+
+         />
+
+</android.support.constraint.ConstraintLayout>

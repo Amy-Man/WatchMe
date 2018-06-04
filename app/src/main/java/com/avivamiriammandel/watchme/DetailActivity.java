@@ -9,8 +9,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -22,6 +26,7 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -82,7 +87,10 @@ public class DetailActivity extends AppCompatActivity {
     BottomNavigationView navigation;
     ConstraintLayout constraintLayoutDetails, constraintLayoutRecycler,
             constraintLayoutRecyclerReview;
-    Boolean recyclerNull = false, isFavorite = false;
+    Boolean recyclerNull = false, nav_detail, nav_trailer, nav_review,
+            isMovie;
+    float dpWidth;
+    float dpHeight;
 
     private AppCompatActivity activity = DetailActivity.this;
     MaterialFavoriteButton materialFavoriteButton;
@@ -92,6 +100,7 @@ public class DetailActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+
 
 
 
@@ -124,7 +133,13 @@ public class DetailActivity extends AppCompatActivity {
 
 
         final Intent intent = getIntent();
-        if (intent.hasExtra(context.getString(R.string.movies_parcelable_object))) {
+        if ((intent.hasExtra(context.getString(R.string.movies_parcelable_object)))
+        || (savedInstanceState != null)) {
+            final DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+            dpWidth = displayMetrics.widthPixels / displayMetrics.density;
+            dpHeight = displayMetrics.heightPixels / displayMetrics.density;
+
+
             detailScrollView.setVisibility(View.VISIBLE);
             detailScrollView.setLayoutParams(new ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             detailScrollViewRecycler.setVisibility(View.INVISIBLE);
@@ -132,7 +147,7 @@ public class DetailActivity extends AppCompatActivity {
             detailScrollViewRecyclerReview.setVisibility(View.INVISIBLE);
             detailScrollViewRecyclerReview.setLayoutParams(new ConstraintLayout.LayoutParams(0, 0));
 
-            fillViews();
+            fillViews(savedInstanceState);
 
             db = AppDatabase.getInstance(getApplicationContext());
 
@@ -210,7 +225,9 @@ public class DetailActivity extends AppCompatActivity {
                     detailScrollViewRecycler.setLayoutParams(new ConstraintLayout.LayoutParams(0, 0));
                     detailScrollViewRecyclerReview.setVisibility(View.INVISIBLE);
                     detailScrollViewRecyclerReview.setLayoutParams(new ConstraintLayout.LayoutParams(0, 0));
-
+                    nav_detail = true;
+                    nav_review = false;
+                    nav_trailer = false;
                     return true;
                 case R.id.navigation_trailer:
                     if (isOnline()) {
@@ -225,6 +242,9 @@ public class DetailActivity extends AppCompatActivity {
                         detailScrollViewRecyclerReview.setLayoutParams(new ConstraintLayout.LayoutParams(0, 0));
                         trailersTitle.setText(R.string.title_trailers);
                         loadJSON();
+                        nav_detail = false;
+                        nav_review = false;
+                        nav_trailer = true;
                     } else {
                         // Not Available...
                         Toast.makeText(context, R.string.onNoInternetError, Toast.LENGTH_LONG).show();
@@ -248,7 +268,9 @@ public class DetailActivity extends AppCompatActivity {
                             reviewsTitle.setText(R.string.title_reviews);
                         }
 
-
+                        nav_detail = false;
+                        nav_review = true;
+                        nav_trailer = false;
                         }
                     else {
                         // Not Available...
@@ -262,10 +284,23 @@ public class DetailActivity extends AppCompatActivity {
         }
     };
 
-    private void fillViews() {
-        movie = getIntent().getParcelableExtra(context.getString(R.string.movies_parcelable_object));
+    private void fillViews(Bundle savedInstanceState) {
 
-        initViews();
+        if (savedInstanceState == null) {
+            movie = getIntent().getParcelableExtra(context.getString(R.string.movies_parcelable_object));
+            initViews();
+        } else {
+            movie = savedInstanceState.getParcelable(context.getString(R.string.movies_parcelable_object));
+            if (savedInstanceState.getBoolean(context.getString(R.string.title_trailer))){
+                navigation.setSelectedItemId(R.id.navigation_trailer);
+            } else if (savedInstanceState.getBoolean(context.getString(R.string.title_review))) {
+                navigation.setSelectedItemId(R.id.navigation_review);
+            } else if (savedInstanceState.getBoolean(context.getString(R.string.movie_details))){
+                navigation.setSelectedItemId(R.id.navigation_detail);
+            }
+        }
+
+
 
         final String thumbnailUrl = movie.getPosterPath();
         final String backdropUrl = movie.getBackdropPath();
@@ -291,6 +326,12 @@ public class DetailActivity extends AppCompatActivity {
         plotSynopsis.setText(synopsis);
         userRating.setText(ratingOutOfTen);
         releaseDate.setText(release);
+        int error;
+        if (dpWidth >= dpHeight)
+            error = R.drawable.the_movie_db_error_loading_poster_land ;
+        else
+            error = R.drawable.the_movie_db_error_loading_poster ;
+
 
         try {
             GlideApp.with(context)
@@ -307,7 +348,7 @@ public class DetailActivity extends AppCompatActivity {
                             .crossfade(true)
                     )
                     .placeholder(R.drawable.the_movie_db_loading_poster)
-                    .error(R.drawable.the_movie_db_error_loading_poster)
+                    .error(error)
                     .into(backdropView);
         } catch (final IllegalArgumentException e) {
             Log.e(TAG, "onBindViewHolder:  " + e.getMessage());
@@ -324,7 +365,7 @@ public class DetailActivity extends AppCompatActivity {
                     )
 
                     .placeholder(R.drawable.the_movie_db_loading_poster)
-                    .error(R.drawable.the_movie_db_error_loading_poster)
+                    .error(error)
                     .into(backdropView);
         } catch (final IllegalArgumentException e) {
             Log.e(TAG, "onBindViewHolder:  " + e.getMessage());
@@ -494,7 +535,32 @@ public class DetailActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+        isMovie = false;
+        db = AppDatabase.getInstance(getApplicationContext());
 
+        MovieViewModelFactory modelFactory = new MovieViewModelFactory(db, movie.getId());
+        final MovieViewModel movieViewModel = ViewModelProviders.of(this, modelFactory).get(MovieViewModel.class);
+        movieViewModel.getMovie().observe(DetailActivity.this, new Observer<Movie>() {
+                    @Override
+                    public void onChanged(@Nullable Movie movie) {
+                        if (movie != null) {
+                            movieViewModel.getMovie().removeObserver(this);
+                            isMovie = true;
+                            DetailActivity.this.movie = movie;
+                            Log.d(TAG, "onChanged: instant State" + DetailActivity.this.movie);
+                        }
+                    }
+                });
+        if (isMovie) {
+            outState.putParcelable(getString(R.string.movies_parcelable_object), DetailActivity.this.movie);
+            outState.putBoolean(getString(R.string.movie_details), nav_detail);
+            outState.putBoolean(getString(R.string.title_trailer), nav_trailer);
+            outState.putBoolean(getString(R.string.title_review), nav_review);
+        }
+    }
 
 
     public boolean isOnline() {
