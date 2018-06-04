@@ -147,7 +147,7 @@ public class DetailActivity extends AppCompatActivity {
             detailScrollViewRecyclerReview.setVisibility(View.INVISIBLE);
             detailScrollViewRecyclerReview.setLayoutParams(new ConstraintLayout.LayoutParams(0, 0));
 
-            fillViews(savedInstanceState);
+            fillViews();
 
             db = AppDatabase.getInstance(getApplicationContext());
 
@@ -284,25 +284,12 @@ public class DetailActivity extends AppCompatActivity {
         }
     };
 
-    private void fillViews(Bundle savedInstanceState) {
+    private void fillViews() {
 
-        if (savedInstanceState == null) {
+
             movie = getIntent().getParcelableExtra(context.getString(R.string.movies_parcelable_object));
             initViews();
-        } else if (savedInstanceState != null){
-            movie = savedInstanceState.getParcelable(context.getString(R.string.movies_parcelable_object));
-            if (savedInstanceState.getBoolean(context.getString(R.string.title_trailer))){
-                navigation.setSelectedItemId(R.id.navigation_trailer);
-            } else if (savedInstanceState.getBoolean(context.getString(R.string.title_review))) {
-                navigation.setSelectedItemId(R.id.navigation_review);
-            } else if (savedInstanceState.getBoolean(context.getString(R.string.movie_details))){
-                navigation.setSelectedItemId(R.id.navigation_detail);
-            }
-        }
-
-
-
-        final String thumbnailUrl = movie.getPosterPath();
+            final String thumbnailUrl = movie.getPosterPath();
         final String backdropUrl = movie.getBackdropPath();
 
         final String movieTitle = movie.getTitle();
@@ -568,6 +555,20 @@ public class DetailActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState, PersistableBundle persistentState) {
+        super.onRestoreInstanceState(savedInstanceState, persistentState);
+        if (savedInstanceState != null){
+            movie = savedInstanceState.getParcelable(context.getString(R.string.movies_parcelable_object));
+            if (savedInstanceState.getBoolean(context.getString(R.string.title_trailer))){
+                navigation.setSelectedItemId(R.id.navigation_trailer);
+            } else if (savedInstanceState.getBoolean(context.getString(R.string.title_review))) {
+                navigation.setSelectedItemId(R.id.navigation_review);
+            } else if (savedInstanceState.getBoolean(context.getString(R.string.movie_details))){
+                navigation.setSelectedItemId(R.id.navigation_detail);
+            }
+        }
+    }
 
     public boolean isOnline() {
         final ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);

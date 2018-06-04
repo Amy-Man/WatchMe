@@ -48,6 +48,8 @@
     <string name="title_reviews">Reviews:</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+    <string name="title_movie_id">Notifications</string>
+
 
 
 </resources>

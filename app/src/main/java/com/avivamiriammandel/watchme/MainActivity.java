@@ -5,6 +5,7 @@ import android.arch.lifecycle.Lifecycle;
 import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -54,16 +55,25 @@ public class MainActivity extends AppCompatActivity {
     private static final int WIDTH_OF_COLUMNS = 120;
     public static final String TAG = MoviesAdapter.class.getName();
     private BottomNavigationView navigation;
-
+    private GridLayoutManager gridLayoutManager;
+    private Context context;
+    private Boolean nav_popular, nav_top_rated, nav_favorite;
+    private int recycler_position;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        context = getApplicationContext();
+        nav_popular = true;
+        nav_favorite = false;
+        nav_top_rated = false;
         navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-
+        if (movieList  != null)
+            movieList.clear();
+        recycler_position = 0;
         initViews();
 
     }
@@ -81,7 +91,8 @@ public class MainActivity extends AppCompatActivity {
         final DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         final float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
         final int numColumns = (int) (dpWidth / WIDTH_OF_COLUMNS);
-        recyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this, numColumns));
+        gridLayoutManager = new GridLayoutManager(MainActivity.this, numColumns);
+        recyclerView.setLayoutManager(gridLayoutManager);
 
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(adapter);
@@ -98,12 +109,21 @@ public class MainActivity extends AppCompatActivity {
             switch (item.getItemId()) {
                 case R.id.navigation_popular:
                     loadJSON();
+                    nav_popular = true;
+                    nav_favorite = false;
+                    nav_top_rated = false;
                     return true;
                 case R.id.navigation_top_rated:
                     loadJSON1();
+                    nav_popular = false;
+                    nav_favorite = false;
+                    nav_top_rated = true;
                     return true;
                 case R.id.navigation_favorite:
                     initViews1();
+                    nav_popular = false;
+                    nav_favorite = true;
+                    nav_top_rated = false;
                     return true;
                 default:
                     return true;
@@ -120,7 +140,6 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), R.string.apiKeyError, Toast.LENGTH_LONG).show();
                 return;
             }
-
             final Client client = new Client();
             final Service apiService = Client.getClient().create(Service.class);
             final Call<MoviesResponse> call = apiService.getPopularMovies(BuildConfig.API_KEY);
@@ -129,14 +148,15 @@ public class MainActivity extends AppCompatActivity {
                 public void onResponse(@NonNull Call<MoviesResponse> call, @NonNull Response<MoviesResponse> response) {
                     if (response.isSuccessful()) {
                         final MoviesResponse results = response.body();
-                        List<Movie> movieList = null;
+                        if (movieList  != null)
+                            movieList.clear();
                         if (results != null) {
                             movieList = results.getResults();
                         }
 
                         recyclerView = findViewById(R.id.recycler_view);
                         recyclerView.setAdapter(new MoviesAdapter(getApplicationContext(), movieList));
-                        recyclerView.smoothScrollToPosition(0);
+                        recyclerView.smoothScrollToPosition(recycler_position);
                         progressBar.setVisibility(View.INVISIBLE);
                         recyclerView.setVisibility(View.VISIBLE);
                     } else {
@@ -180,14 +200,15 @@ public class MainActivity extends AppCompatActivity {
                 public void onResponse(@NonNull Call<MoviesResponse> call, @NonNull Response<MoviesResponse> response) {
                     if (response.isSuccessful()) {
                         MoviesResponse results = response.body();
-                        List<Movie> movieList = null;
+                        if (movieList  != null)
+                            movieList.clear();
                         if (results != null) {
                             movieList = results.getResults();
                         }
 
                         recyclerView = findViewById(R.id.recycler_view);
                         recyclerView.setAdapter(new MoviesAdapter(getApplicationContext(), movieList));
-                        recyclerView.smoothScrollToPosition(0);
+                        recyclerView.smoothScrollToPosition(recycler_position);
                         progressBar.setVisibility(View.INVISIBLE);
                         recyclerView.setVisibility(View.VISIBLE);
                     } else {
@@ -227,7 +248,8 @@ public class MainActivity extends AppCompatActivity {
         final DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         final float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
         final int numColumns = (int) (dpWidth / WIDTH_OF_COLUMNS);
-        recyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this, numColumns));
+        gridLayoutManager = new GridLayoutManager(MainActivity.this, numColumns);
+        recyclerView.setLayoutManager(gridLayoutManager);
 
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
@@ -241,6 +263,8 @@ public class MainActivity extends AppCompatActivity {
     public void loadFavorites() {
 
 
+        if (movieList  != null)
+            movieList.clear();
 
         final MainViewModel viewModel = ViewModelProviders.of(MainActivity.this).get(MainViewModel.class);
         viewModel.getMovies().observe(MainActivity.this, new Observer<List<Movie>>() {
@@ -250,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
                 if (movies != null) {
                     adapter = new MoviesAdapter(MainActivity.this, movies );
                     recyclerView.setAdapter(adapter);
-                    recyclerView.smoothScrollToPosition(0);
+                    recyclerView.smoothScrollToPosition(recycler_position);
 
                     recyclerView.setVisibility(View.VISIBLE);
                     progressBar.setVisibility(View.INVISIBLE);
@@ -267,8 +291,51 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-
         super.onSaveInstanceState(outState);
+        outState.putInt(context.getString(R.string.title_movie_id), gridLayoutManager.findFirstVisibleItemPosition());
+        outState.putBoolean(getString(R.string.title_popular), nav_popular);
+        outState.putBoolean(getString(R.string.title_favorite), nav_favorite);
+        outState.putBoolean(getString(R.string.title_top_rated), nav_top_rated);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        recycler_position = savedInstanceState.getInt(getString(R.string.title_movie_id));
+        if (savedInstanceState != null) {
+            if (savedInstanceState.getBoolean(context.getString(R.string.title_popular))) {
+                if (movieList != null) {
+                    movieList.clear();
+                }
+                navigation.setSelectedItemId(R.id.navigation_popular);
+                recyclerView.smoothScrollToPosition(recycler_position);
+            } else if (savedInstanceState.getBoolean(context.getString(R.string.title_favorite))) {
+                final MainViewModel viewModel = ViewModelProviders.of(MainActivity.this).get(MainViewModel.class);
+                viewModel.getMovies().observe(MainActivity.this, new Observer<List<Movie>>() {
+                    @Override
+                    public void onChanged(@Nullable List<Movie> movies) {
+                        if (movies != null) {
+                            viewModel.getMovies().removeObserver(this);
+                            adapter = new MoviesAdapter(MainActivity.this, movies );
+                            recyclerView.setAdapter(adapter);
+                            recyclerView.smoothScrollToPosition(recycler_position);
+
+                            recyclerView.setVisibility(View.VISIBLE);
+                            progressBar.setVisibility(View.INVISIBLE);
+
+                        } else {
+                            navigation.setSelectedItemId(R.id.navigation_popular);
+                            Toast.makeText(MainActivity.this, R.string.no_favorite_movies, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+            }
+
+            } else if (savedInstanceState.getBoolean(context.getString(R.string.title_top_rated))) {
+                navigation.setSelectedItemId(R.id.navigation_top_rated);
+                recyclerView.smoothScrollToPosition(recycler_position);
+
+        }
     }
 }
 
