@@ -177,7 +177,7 @@ public class DetailActivity extends AppCompatActivity {
                         @Override
                         public void onFavoriteChanged(final MaterialFavoriteButton buttonView, final boolean favorite) {
                             MovieViewModelFactory modelFactory = new MovieViewModelFactory(db, movie.getId());
-                            final MovieViewModel movieViewModel = ViewModelProviders.of(DetailActivity.this, modelFactory).get(MovieViewModel.class);
+                            final MovieViewModel movieViewModel1 = ViewModelProviders.of(DetailActivity.this, modelFactory).get(MovieViewModel.class);
                             movieViewModel.getMovie().observe(DetailActivity.this, new Observer<Movie>() {
                                 @Override
                                 public void onChanged(@Nullable Movie movie) {
@@ -289,7 +289,7 @@ public class DetailActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             movie = getIntent().getParcelableExtra(context.getString(R.string.movies_parcelable_object));
             initViews();
-        } else {
+        } else if (savedInstanceState != null){
             movie = savedInstanceState.getParcelable(context.getString(R.string.movies_parcelable_object));
             if (savedInstanceState.getBoolean(context.getString(R.string.title_trailer))){
                 navigation.setSelectedItemId(R.id.navigation_trailer);
@@ -541,19 +541,25 @@ public class DetailActivity extends AppCompatActivity {
         isMovie = false;
         db = AppDatabase.getInstance(getApplicationContext());
 
+
         MovieViewModelFactory modelFactory = new MovieViewModelFactory(db, movie.getId());
-        final MovieViewModel movieViewModel = ViewModelProviders.of(this, modelFactory).get(MovieViewModel.class);
-        movieViewModel.getMovie().observe(DetailActivity.this, new Observer<Movie>() {
+        final MovieViewModel movieViewModel2 = ViewModelProviders.of(this, modelFactory).get(MovieViewModel.class);
+        movieViewModel2.getMovie().observe(DetailActivity.this, new Observer<Movie>() {
                     @Override
                     public void onChanged(@Nullable Movie movie) {
                         if (movie != null) {
-                            movieViewModel.getMovie().removeObserver(this);
+                            movieViewModel2.getMovie().removeObserver(this);
                             isMovie = true;
                             DetailActivity.this.movie = movie;
                             Log.d(TAG, "onChanged: instant State" + DetailActivity.this.movie);
                         }
                     }
                 });
+        Intent intent = getIntent();
+        if (intent.hasExtra(context.getString(R.string.movies_parcelable_object)))
+            isMovie = true;
+            movie =  getIntent().getParcelableExtra(context.getString(R.string.movies_parcelable_object));
+            Log.d(TAG, "onChanged: instant State intent" + DetailActivity.this.movie);
         if (isMovie) {
             outState.putParcelable(getString(R.string.movies_parcelable_object), DetailActivity.this.movie);
             outState.putBoolean(getString(R.string.movie_details), nav_detail);
