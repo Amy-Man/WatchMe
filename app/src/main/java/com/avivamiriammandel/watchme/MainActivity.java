@@ -262,11 +262,8 @@ public class MainActivity extends AppCompatActivity {
     public void loadFavorites() {
 
 
-        if (adapter  != null)
-            adapter = null;
-
-        viewModel = ViewModelProviders.of(MainActivity.this).get(MainViewModel.class);
-        viewModel.getMovies().observe(MainActivity.this, new Observer<List<Movie>>() {
+            viewModel = ViewModelProviders.of(MainActivity.this).get(MainViewModel.class);
+            viewModel.getMovies().observe(MainActivity.this, new Observer<List<Movie>>() {
             @Override
             public void onChanged(@Nullable List<Movie> movies) {
                 if (movies != null) {
@@ -313,6 +310,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
 }
 
 
