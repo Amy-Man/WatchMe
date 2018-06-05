@@ -50,8 +50,10 @@
     <string name="title_notifications">Notifications</string>
     <string name="title_movie_id">Notifications</string>
     <string name="title_database_name">favorites</string>
-    <string name="title_added_to_favorite">Added to favorite</string>
-    <string name="title_removed_from_favorite">Removed from favorites</string>
+    <string name="title_added_to_favorites">Added to favorites</string>
+    <string name="title_removed_from_favorites">Removed from favorites</string>
+    <string name="title_already_added_to_favorites">Already Added to favorites</string>
+    <string name="title_already_removed_from_favorites">Already Removed from favorites</string>
 
     <string name="no_api_data">No Api Data</string>
     <string name="on_bind_view_holder">onBindViewHolder:  </string>

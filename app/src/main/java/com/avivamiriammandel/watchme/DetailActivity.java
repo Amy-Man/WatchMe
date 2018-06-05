@@ -63,7 +63,7 @@ public class DetailActivity extends AppCompatActivity {
     private static final String TAG = DetailActivity.class.getSimpleName();
     AppDatabase db;
     Context context;
-    Movie movie;
+    Movie movie, favoriteMovie;
     android.support.v4.widget.NestedScrollView detailScrollView, detailScrollViewRecycler,
             detailScrollViewRecyclerReview;
     TextView plotSynopsis, userRating, releaseDate, trailersTitle, reviewsTitle;
@@ -79,7 +79,7 @@ public class DetailActivity extends AppCompatActivity {
     ConstraintLayout constraintLayoutDetails, constraintLayoutRecycler,
             constraintLayoutRecyclerReview;
     Boolean recyclerNull = false, navDetail, navTrailer, navReview,
-            isMovie, justDelete = false;
+            isMovie,  justAdd = false, justDelete = false;
     float dpWidth;
     float dpHeight;
 
@@ -124,13 +124,11 @@ public class DetailActivity extends AppCompatActivity {
 
 
         final Intent intent = getIntent();
-        if ((intent.hasExtra(context.getString(R.string.movies_parcelable_object)))
-        || (savedInstanceState != null)) {
-            final DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-            dpWidth = displayMetrics.widthPixels / displayMetrics.density;
-            dpHeight = displayMetrics.heightPixels / displayMetrics.density;
+        if (intent.hasExtra(context.getString(R.string.movies_parcelable_object))) {
 
-
+            navDetail = true;
+            navReview = false;
+            navTrailer = false;
             detailScrollView.setVisibility(View.VISIBLE);
             detailScrollView.setLayoutParams(new ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             detailScrollViewRecycler.setVisibility(View.INVISIBLE);
@@ -140,148 +138,176 @@ public class DetailActivity extends AppCompatActivity {
 
             fillViews();
 
-            db = AppDatabase.getInstance(getApplicationContext());
-
-            MovieViewModelFactory modelFactory = new MovieViewModelFactory(db, movie.getId());
-            final MovieViewModel movieViewModel = ViewModelProviders.of(this, modelFactory).get(MovieViewModel.class);
-            movieViewModel.getMovie().observe(DetailActivity.this, new Observer<Movie>() {
-                @Override
-                public void onChanged(@Nullable Movie movie) {
-                    if (movie == null) {
-                        movieViewModel.getMovie().removeObserver(this);
-                        materialFavoriteButton.setFavorite(false);
-                        // deselect the favorite button
-                    } else {
-                        movieViewModel.getMovie().removeObserver(this);
-                        materialFavoriteButton.setFavorite(true);
-                        // select the button
-                    }
-                }
-            });
+            setMaterialFavoriteButtonOnLoad();
 
 
 
 
 
-            materialFavoriteButton.setOnFavoriteChangeListener(
+
+                    materialFavoriteButton.setOnFavoriteChangeListener(
                     new MaterialFavoriteButton.OnFavoriteChangeListener() {
                         @Override
-                        public void onFavoriteChanged(final MaterialFavoriteButton buttonView, final boolean favorite) {
-                            MovieViewModelFactory modelFactory = new MovieViewModelFactory(db, movie.getId());
-                            final MovieViewModel movieViewModel1 = ViewModelProviders.of(DetailActivity.this, modelFactory).get(MovieViewModel.class);
-                            movieViewModel.getMovie().observe(DetailActivity.this, new Observer<Movie>() {
-                                @Override
-                                public void onChanged(@Nullable Movie movie) {
-
-                                    if ((favorite) && (movie == null)) {
-                                        movieViewModel.getMovie().removeObserver(this);
-                                        if (!justDelete) {
-                                            saveFavorite();
-                                            Snackbar.make(buttonView, getString(R.string.title_added_to_favorite),
+                        public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
+                                     if (favorite) {
+                                        if (favoriteMovie == null) {
+                                            if (!justDelete) {
+                                                saveFavorite();
+                                                Snackbar.make(buttonView, getString(R.string.title_added_to_favorites),
+                                                        Snackbar.LENGTH_LONG).show();
+                                                justAdd = true;
+                                            } else {
+                                                justDelete = false;
+                                            }
+                                        }else
+                                            Snackbar.make(buttonView, getString(R.string.title_already_added_to_favorites),
                                                     Snackbar.LENGTH_LONG).show();
-                                        }
-                                        else {
-                                            justDelete = false;
-                                        }
-                                    } else if (!(favorite) && (movie != null)) {
-                                        movieViewModel.getMovie().removeObserver(this);
-                                        Snackbar.make(buttonView, getString(R.string.title_removed_from_favorite),
-                                                Snackbar.LENGTH_LONG).show();
-                                        deleteFavorite();
-                                        justDelete = true;
+
+                                    } else {
+                                        if (favoriteMovie != null) {
+                                            if (!justAdd) {
+                                                Snackbar.make(buttonView, getString(R.string.title_removed_from_favorites),
+                                                        Snackbar.LENGTH_LONG).show();
+                                                deleteFavorite();
+                                                justDelete = true;
+                                            } else
+                                                justAdd = false;
+                                        } else
+                                            Snackbar.make(buttonView, getString(R.string.title_already_removed_from_favorites),
+                                                    Snackbar.LENGTH_LONG).show();
                                     }
                                 }
                             });
-                                }
-
-                            });
 
 
 
-            initViews();
         }else {
             Toast.makeText(context, getString(R.string.no_api_data), Toast.LENGTH_SHORT).show();
         }
 
     }
 
-     private final BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
+    @NonNull
+    private void setMaterialFavoriteButtonOnLoad() {
+        db = AppDatabase.getInstance(getApplicationContext());
+
+        MovieViewModelFactory modelFactory = new MovieViewModelFactory(db, movie.getId());
+        final MovieViewModel movieViewModel = ViewModelProviders.of(this, modelFactory).get(MovieViewModel.class);
+        movieViewModel.getMovie().observe(DetailActivity.this, new Observer<Movie>() {
+            @Override
+            public void onChanged(@Nullable Movie movie) {
+                favoriteMovie = movie;
+                if (movie == null) {
+                    materialFavoriteButton.setFavorite(false);
+                    Log.d(TAG, "onChanged: favorite not found");
+                    // deselect the favorite button
+                } else {
+                    materialFavoriteButton.setFavorite(true);
+                    Log.d(TAG, "onChanged: favorite found");
+                    // select the button
+                }
+            }
+        });
+
+    }
+
+    private final BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
 
         @Override
         public boolean onNavigationItemSelected(@NonNull final MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.navigation_list:
-                    detailScrollView.setVisibility(View.VISIBLE);
-                    detailScrollView.setLayoutParams(new ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                    detailScrollViewRecycler.setVisibility(View.INVISIBLE);
-                    detailScrollViewRecycler.setLayoutParams(new ConstraintLayout.LayoutParams(0, 0));
-                    detailScrollViewRecyclerReview.setVisibility(View.INVISIBLE);
-                    detailScrollViewRecyclerReview.setLayoutParams(new ConstraintLayout.LayoutParams(0, 0));
-                    navDetail = true;
+                    navDetail = false;
                     navReview = false;
-                    navTrailer = false;
+                    navTrailer = true;
+                    setNavigationListVisibility();
                     return true;
                 case R.id.navigation_trailer:
-                    if (isOnline()) {
-
-                    // Its Available...
-                        detailScrollView.setVisibility(View.INVISIBLE);
-                        detailScrollView.setLayoutParams(new ConstraintLayout.LayoutParams(0,0));
-                        detailScrollViewRecycler.setVisibility(View.VISIBLE);
-                        detailScrollViewRecycler.setLayoutParams(new ConstraintLayout.LayoutParams
-                                (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                        detailScrollViewRecyclerReview.setVisibility(View.INVISIBLE);
-                        detailScrollViewRecyclerReview.setLayoutParams(new ConstraintLayout.LayoutParams(0, 0));
-                        trailersTitle.setText(R.string.title_trailers);
-                        loadJSON();
-                        navDetail = false;
-                        navReview = false;
-                        navTrailer = true;
-                    } else {
-                        // Not Available...
-                        Toast.makeText(context, R.string.onNoInternetError, Toast.LENGTH_LONG).show();
-                        finish();
-
-                    }
+                    navDetail = false;
+                    navReview = false;
+                    navTrailer = true;
+                    setTrailerListVisibility();
                     return true;
                 case R.id.navigation_review:
-                    if (isOnline()) {
-                        loadJSON1();
-                        detailScrollView.setVisibility(View.INVISIBLE);
-                        detailScrollView.setLayoutParams(new ConstraintLayout.LayoutParams(0,0));
-                        detailScrollViewRecycler.setVisibility(View.INVISIBLE);
-                        detailScrollViewRecycler.setLayoutParams(new ConstraintLayout.LayoutParams(0, 0));
-                        detailScrollViewRecyclerReview.setVisibility(View.VISIBLE);
-                        detailScrollViewRecyclerReview.setLayoutParams(new ConstraintLayout.LayoutParams
-                                (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                        if (recyclerNull) {
-                            reviewsTitle.setText(R.string.title_reviews+ R.string.no_reviews);
-                        } else {
-                            reviewsTitle.setText(R.string.title_reviews);
-                        }
-
-                        navDetail = false;
-                        navReview = true;
-                        navTrailer = false;
-                        }
-                    else {
-                        // Not Available...
-                        Toast.makeText(context, R.string.onNoInternetError, Toast.LENGTH_LONG).show();
-                        finish();
-                    }
-                        return true;
+                    navDetail = false;
+                    navReview = true;
+                    navTrailer = false;
+                    setReviewListVisibility();
+                    return true;
                 default:
                     return false;
             }
         }
     };
 
+    private void setReviewListVisibility() {
+        if (isOnline()) {
+            loadJSON1();
+            detailScrollView.setVisibility(View.INVISIBLE);
+            detailScrollView.setLayoutParams(new ConstraintLayout.LayoutParams(0,0));
+            detailScrollViewRecycler.setVisibility(View.INVISIBLE);
+            detailScrollViewRecycler.setLayoutParams(new ConstraintLayout.LayoutParams(0, 0));
+            detailScrollViewRecyclerReview.setVisibility(View.VISIBLE);
+            detailScrollViewRecyclerReview.setLayoutParams(new ConstraintLayout.LayoutParams
+                    (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            if (recyclerNull) {
+                String noReviews = getString(R.string.title_reviews) + getString(R.string.no_reviews);
+                reviewsTitle.setText(noReviews);
+            } else {
+                reviewsTitle.setText(R.string.title_reviews);
+            }
+
+
+            }
+        else {
+            // Not Available...
+            Toast.makeText(context, R.string.onNoInternetError, Toast.LENGTH_LONG).show();
+            finish();
+        }
+    }
+
+    private void setTrailerListVisibility() {
+        if (isOnline()) {
+
+        // Its Available...
+            detailScrollView.setVisibility(View.INVISIBLE);
+            detailScrollView.setLayoutParams(new ConstraintLayout.LayoutParams(0,0));
+            detailScrollViewRecycler.setVisibility(View.VISIBLE);
+            detailScrollViewRecycler.setLayoutParams(new ConstraintLayout.LayoutParams
+                    (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            detailScrollViewRecyclerReview.setVisibility(View.INVISIBLE);
+            detailScrollViewRecyclerReview.setLayoutParams(new ConstraintLayout.LayoutParams(0, 0));
+            trailersTitle.setText(R.string.title_trailers);
+            loadJSON();
+            } else {
+            // Not Available...
+            Toast.makeText(context, R.string.onNoInternetError, Toast.LENGTH_LONG).show();
+            finish();
+
+        }
+    }
+
+    private void setNavigationListVisibility() {
+        detailScrollView.setVisibility(View.VISIBLE);
+        detailScrollView.setLayoutParams(new ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        detailScrollViewRecycler.setVisibility(View.INVISIBLE);
+        detailScrollViewRecycler.setLayoutParams(new ConstraintLayout.LayoutParams(0, 0));
+        detailScrollViewRecyclerReview.setVisibility(View.INVISIBLE);
+        detailScrollViewRecyclerReview.setLayoutParams(new ConstraintLayout.LayoutParams(0, 0));
+        navDetail = true;
+        navReview = false;
+        navTrailer = false;
+    }
+
     private void fillViews() {
 
+        final DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        dpWidth = displayMetrics.widthPixels / displayMetrics.density;
+        dpHeight = displayMetrics.heightPixels / displayMetrics.density;
 
-            movie = getIntent().getParcelableExtra(context.getString(R.string.movies_parcelable_object));
-            initViews();
+        movie = getIntent().getParcelableExtra(context.getString(R.string.movies_parcelable_object));
+
             final String thumbnailUrl = movie.getPosterPath();
         final String backdropUrl = movie.getBackdropPath();
 
@@ -515,8 +541,8 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-        super.onSaveInstanceState(outState, outPersistentState);
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
         isMovie = false;
         db = AppDatabase.getInstance(getApplicationContext());
 
@@ -548,15 +574,27 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState, PersistableBundle persistentState) {
-        super.onRestoreInstanceState(savedInstanceState, persistentState);
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
         if (savedInstanceState != null){
             movie = savedInstanceState.getParcelable(context.getString(R.string.movies_parcelable_object));
             if (savedInstanceState.getBoolean(context.getString(R.string.title_trailer))){
+                Log.d(TAG, "onRestoreInstanceState: get Trailer");
+                fillViews();
+                initViews();
+                setTrailerListVisibility();
                 navigation.setSelectedItemId(R.id.navigation_trailer);
             } else if (savedInstanceState.getBoolean(context.getString(R.string.title_review))) {
+                Log.d(TAG, "onRestoreInstanceState: get Review");
+                fillViews();
+                loadJSON1();
+                setReviewListVisibility();
                 navigation.setSelectedItemId(R.id.navigation_review);
             } else if (savedInstanceState.getBoolean(context.getString(R.string.movie_details))){
+                Log.d(TAG, "onRestoreInstanceState: get Details");
+                fillViews();
+                setNavigationListVisibility();
+                setMaterialFavoriteButtonOnLoad();
                 navigation.setSelectedItemId(R.id.navigation_detail);
             }
         }

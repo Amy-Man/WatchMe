@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
             navTopRated = false;
 
             initViews();
+            loadJSON();
         }
 
 
@@ -93,9 +94,6 @@ public class MainActivity extends AppCompatActivity {
 
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(adapter);
-
-
-        loadJSON();
     }
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -274,8 +272,8 @@ public class MainActivity extends AppCompatActivity {
                     recyclerView.setVisibility(View.VISIBLE);
                     progressBar.setVisibility(View.INVISIBLE);
                 } else {
-                    navigation.setSelectedItemId(R.id.navigation_popular);
                     Toast.makeText(MainActivity.this, R.string.no_favorite_movies, Toast.LENGTH_LONG).show();
+                    navigation.setSelectedItemId(R.id.navigation_popular);
                 }
             }
         });
@@ -285,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        viewModel.getMovies().removeObservers(MainActivity.this);
+//        viewModel.getMovies().removeObservers(MainActivity.this);
         outState.putInt(context.getString(R.string.title_movie_id), gridLayoutManager.findLastVisibleItemPosition());
         outState.putBoolean(getString(R.string.title_popular), navPopular);
         outState.putBoolean(getString(R.string.title_favorite), navFavorite);
@@ -298,13 +296,15 @@ public class MainActivity extends AppCompatActivity {
         if (savedInstanceState != null) {
             recycler_position = savedInstanceState.getInt(getString(R.string.title_movie_id));
               if (savedInstanceState.getBoolean(context.getString(R.string.title_popular))) {
-                loadJSON();
+                  initViews();
+                  loadJSON();
                 navigation.setSelectedItemId(R.id.navigation_popular);
             } else if (savedInstanceState.getBoolean(context.getString(R.string.title_favorite))) {
                 initViews1();
                 navigation.setSelectedItemId(R.id.navigation_favorite);
             } else if (savedInstanceState.getBoolean(context.getString(R.string.title_top_rated))) {
-                loadJSON1();
+                  initViews();
+                  loadJSON1();
                 navigation.setSelectedItemId(R.id.navigation_top_rated);
                 }
 

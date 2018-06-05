@@ -176,7 +176,10 @@ public class Movie implements Serializable, Parcelable {
     }
 
     public String getBackdropPath() {
-        return IMAGE_BASE_URL+THUMBNAIL_SIZE+backdropPath;
+        if (!(posterPath.contains(IMAGE_BASE_URL)))
+            return IMAGE_BASE_URL+THUMBNAIL_SIZE+backdropPath;
+        else
+            return backdropPath;
     }
 
     public void setBackdropPath(String backdropPath) {
