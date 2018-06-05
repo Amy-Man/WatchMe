@@ -7,7 +7,7 @@ package com.avivamiriammandel.watchme.error;
 public class ApiError {
     private int statusCode;
     private String endpoint;
-    private String message = "Unknown Error.";
+    private String message =  "Unknown Error.";
 
     public int getStatusCode() {
         return statusCode;

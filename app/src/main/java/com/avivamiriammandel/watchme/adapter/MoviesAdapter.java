@@ -63,7 +63,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesView
         String ratingOutOfTen = vote + " /" + "10";
         holder.userRating.setText(ratingOutOfTen);
         String thumbnailUrl = movieList.get(position).getPosterPath();
-        Log.d(TAG, "onBindViewHolder: "+ thumbnailUrl);
+
         try {
             GlideApp.with(context)
                     .load(thumbnailUrl)
@@ -82,7 +82,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesView
                     .into(holder.thumbnail);
 
             } catch (IllegalArgumentException e) {
-            Log.e(TAG, "onBindViewHolder:  "+ e.getMessage());
+            Log.e(TAG, R.string.on_bind_view_holder + e.getMessage());
         }
 
     }

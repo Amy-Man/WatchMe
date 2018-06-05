@@ -1,21 +1,13 @@
 package com.avivamiriammandel.watchme;
 
-import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
-import android.arch.persistence.room.Database;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.os.PersistableBundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
@@ -43,7 +35,6 @@ import com.avivamiriammandel.watchme.error.ApiError;
 import com.avivamiriammandel.watchme.error.ReviewErrorUtils;
 import com.avivamiriammandel.watchme.error.TrailerErrorUtils;
 import com.avivamiriammandel.watchme.glide.GlideApp;
-import com.avivamiriammandel.watchme.glide.MoviesAppGlideModule;
 import com.avivamiriammandel.watchme.model.Movie;
 import com.avivamiriammandel.watchme.model.Review;
 import com.avivamiriammandel.watchme.model.ReviewsResponse;
@@ -87,8 +78,8 @@ public class DetailActivity extends AppCompatActivity {
     BottomNavigationView navigation;
     ConstraintLayout constraintLayoutDetails, constraintLayoutRecycler,
             constraintLayoutRecyclerReview;
-    Boolean recyclerNull = false, nav_detail, nav_trailer, nav_review,
-            isMovie;
+    Boolean recyclerNull = false, navDetail, navTrailer, navReview,
+            isMovie, justDelete = false;
     float dpWidth;
     float dpHeight;
 
@@ -181,24 +172,26 @@ public class DetailActivity extends AppCompatActivity {
                             movieViewModel.getMovie().observe(DetailActivity.this, new Observer<Movie>() {
                                 @Override
                                 public void onChanged(@Nullable Movie movie) {
-                                    Log.d(TAG, "onFavoriteChanged: " + favorite + movieViewModel.getMovie());
-                                    if ((favorite) && (movie == null)) {
-                                        Log.d(TAG, "onFavoriteChanged: saved favorite" );
-                                        movieViewModel.getMovie().removeObserver(this);
-                                        saveFavorite();
-                                        Snackbar.make(buttonView, "Added to favorite",
-                                                Snackbar.LENGTH_LONG).show();
 
-                                    } else if (!(favorite) && (movie != null)) {
-                                        Log.d(TAG, "onFavoriteChanged: deleted favorite" );
+                                    if ((favorite) && (movie == null)) {
                                         movieViewModel.getMovie().removeObserver(this);
-                                        Snackbar.make(buttonView, "Removed from favorite",
+                                        if (!justDelete) {
+                                            saveFavorite();
+                                            Snackbar.make(buttonView, getString(R.string.title_added_to_favorite),
+                                                    Snackbar.LENGTH_LONG).show();
+                                        }
+                                        else {
+                                            justDelete = false;
+                                        }
+                                    } else if (!(favorite) && (movie != null)) {
+                                        movieViewModel.getMovie().removeObserver(this);
+                                        Snackbar.make(buttonView, getString(R.string.title_removed_from_favorite),
                                                 Snackbar.LENGTH_LONG).show();
                                         deleteFavorite();
+                                        justDelete = true;
                                     }
                                 }
                             });
-                            return;
                                 }
 
                             });
@@ -207,7 +200,7 @@ public class DetailActivity extends AppCompatActivity {
 
             initViews();
         }else {
-            Toast.makeText(context, "No Api Data", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, getString(R.string.no_api_data), Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -225,9 +218,9 @@ public class DetailActivity extends AppCompatActivity {
                     detailScrollViewRecycler.setLayoutParams(new ConstraintLayout.LayoutParams(0, 0));
                     detailScrollViewRecyclerReview.setVisibility(View.INVISIBLE);
                     detailScrollViewRecyclerReview.setLayoutParams(new ConstraintLayout.LayoutParams(0, 0));
-                    nav_detail = true;
-                    nav_review = false;
-                    nav_trailer = false;
+                    navDetail = true;
+                    navReview = false;
+                    navTrailer = false;
                     return true;
                 case R.id.navigation_trailer:
                     if (isOnline()) {
@@ -242,9 +235,9 @@ public class DetailActivity extends AppCompatActivity {
                         detailScrollViewRecyclerReview.setLayoutParams(new ConstraintLayout.LayoutParams(0, 0));
                         trailersTitle.setText(R.string.title_trailers);
                         loadJSON();
-                        nav_detail = false;
-                        nav_review = false;
-                        nav_trailer = true;
+                        navDetail = false;
+                        navReview = false;
+                        navTrailer = true;
                     } else {
                         // Not Available...
                         Toast.makeText(context, R.string.onNoInternetError, Toast.LENGTH_LONG).show();
@@ -268,9 +261,9 @@ public class DetailActivity extends AppCompatActivity {
                             reviewsTitle.setText(R.string.title_reviews);
                         }
 
-                        nav_detail = false;
-                        nav_review = true;
-                        nav_trailer = false;
+                        navDetail = false;
+                        navReview = true;
+                        navTrailer = false;
                         }
                     else {
                         // Not Available...
@@ -300,7 +293,7 @@ public class DetailActivity extends AppCompatActivity {
         final DecimalFormat format = new DecimalFormat("##.0");
         final String vote = (format.format(voteDoubleSpare));
         final String ratingOutOfTen = vote + " /" + " 10";
-        Log.d(TAG, "onCreate: " + ratingOutOfTen);
+
 
         final Double voteInHalf = movie.getVoteAverage() / 2;
         final DecimalFormat format1 = new DecimalFormat("##.0");
@@ -338,7 +331,7 @@ public class DetailActivity extends AppCompatActivity {
                     .error(error)
                     .into(backdropView);
         } catch (final IllegalArgumentException e) {
-            Log.e(TAG, "onBindViewHolder:  " + e.getMessage());
+            Log.e(TAG, getString(R.string.on_bind_view_holder) + e.getMessage());
         }
 
         try {
@@ -355,7 +348,7 @@ public class DetailActivity extends AppCompatActivity {
                     .error(error)
                     .into(backdropView);
         } catch (final IllegalArgumentException e) {
-            Log.e(TAG, "onBindViewHolder:  " + e.getMessage());
+            Log.e(TAG, getString(R.string.on_bind_view_holder) + e.getMessage());
         }
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -405,7 +398,7 @@ public class DetailActivity extends AppCompatActivity {
 
                             ApiError apiError = TrailerErrorUtils.parseError(response);
                             Toast.makeText(getApplicationContext(), apiError.getMessage(), Toast.LENGTH_LONG).show();
-                            Log.e(TAG, "onResponse: " + apiError.getMessage() + " " + apiError.getStatusCode() + " " + apiError.getEndpoint());
+                            Log.e(TAG, getString(R.string.on_response) + apiError.getMessage() + " " + apiError.getStatusCode() + " " + apiError.getEndpoint());
                         }
                     }
                 }
@@ -413,12 +406,12 @@ public class DetailActivity extends AppCompatActivity {
                 @Override
                 public void onFailure(@NonNull Call<TrailersResponse> call, @NonNull Throwable t) {
                     Toast.makeText(getApplicationContext(), R.string.onNoInternetError, Toast.LENGTH_LONG).show();
-                    Log.d(TAG, "onFailure" + t.getMessage());
+                    Log.d(TAG, getString(R.string.on_failure) + t.getMessage());
                 }
             });
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
-            Log.d(TAG, "on Exception" +e.getMessage());
+            Log.d(TAG, R.string.on_exception + e.getMessage());
         }
     }
 
@@ -458,7 +451,7 @@ public class DetailActivity extends AppCompatActivity {
 
                             ApiError apiError = ReviewErrorUtils.parseError(response);
                             Toast.makeText(getApplicationContext(), apiError.getMessage(), Toast.LENGTH_LONG).show();
-                            Log.e(TAG, "onResponse: " + apiError.getMessage() + " " + apiError.getStatusCode() + " " + apiError.getEndpoint());
+                            Log.e(TAG, R.string.on_response + apiError.getMessage() + " " + apiError.getStatusCode() + " " + apiError.getEndpoint());
                         }
                     }
                 }
@@ -466,12 +459,12 @@ public class DetailActivity extends AppCompatActivity {
                 @Override
                 public void onFailure(@NonNull Call<ReviewsResponse> call, @NonNull Throwable t) {
                     Toast.makeText(getApplicationContext(), R.string.onNoInternetError, Toast.LENGTH_LONG).show();
-                    Log.d(TAG, "onFailure" + t.getMessage());
+                    Log.d(TAG, R.string.on_failure + t.getMessage());
                 }
             });
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
-            Log.d(TAG, "on Exception" + e.getMessage());
+            Log.d(TAG, R.string.on_exception + e.getMessage());
         }
     }
 
@@ -487,7 +480,6 @@ public class DetailActivity extends AppCompatActivity {
                 
         );
 
-        Log.d(TAG, "saveFavorite: " + movie.getPosterPath());
         final AppDatabase database = AppDatabase.getInstance(context);
 
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
@@ -538,7 +530,7 @@ public class DetailActivity extends AppCompatActivity {
                             movieViewModel2.getMovie().removeObserver(this);
                             isMovie = true;
                             DetailActivity.this.movie = movie;
-                            Log.d(TAG, "onChanged: instant State" + DetailActivity.this.movie);
+
                         }
                     }
                 });
@@ -546,12 +538,12 @@ public class DetailActivity extends AppCompatActivity {
         if (intent.hasExtra(context.getString(R.string.movies_parcelable_object)))
             isMovie = true;
             movie =  getIntent().getParcelableExtra(context.getString(R.string.movies_parcelable_object));
-            Log.d(TAG, "onChanged: instant State intent" + DetailActivity.this.movie);
+
         if (isMovie) {
             outState.putParcelable(getString(R.string.movies_parcelable_object), DetailActivity.this.movie);
-            outState.putBoolean(getString(R.string.movie_details), nav_detail);
-            outState.putBoolean(getString(R.string.title_trailer), nav_trailer);
-            outState.putBoolean(getString(R.string.title_review), nav_review);
+            outState.putBoolean(getString(R.string.movie_details), navDetail);
+            outState.putBoolean(getString(R.string.title_trailer), navTrailer);
+            outState.putBoolean(getString(R.string.title_review), navReview);
         }
     }
 
